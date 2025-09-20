@@ -2,16 +2,21 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    // Environment setup
+    environment: 'node',
+    
     // Run tests serially to avoid build race conditions
-    pool: 'forks',
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        singleFork: true
+      threads: {
+        singleThread: true
       }
     },
+    
     // Set timeouts for integration tests
     testTimeout: 30000,
     hookTimeout: 30000,
+    
     // Coverage configuration
     coverage: {
       provider: 'v8',
