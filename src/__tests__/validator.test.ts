@@ -284,7 +284,8 @@ describe('A2AValidator - Comprehensive Tests', () => {
       const result = await validator.validate('https://invalid.com');
 
       expect(result.success).toBe(false);
-      expect(result.errors[0].message).toContain('Network Error');
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]?.message).toContain('Network Error');
     });
   });
 

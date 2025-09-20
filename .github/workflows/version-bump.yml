@@ -1,0 +1,87 @@
+name: Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+      custom_version:
+        description: 'Custom version (optional, overrides version_type)'
+        required: false
+        type: string
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Bump version (custom)
+      if: github.event.inputs.custom_version != ''
+      run: npm version ${{ github.event.inputs.custom_version }} --no-git-tag-version
+      
+    - name: Bump version (auto)
+      if: github.event.inputs.custom_version == ''
+      run: npm version ${{ github.event.inputs.version_type }} --no-git-tag-version
+      
+    - name: Get new version
+      id: get_version
+      run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: bump version to v${{ steps.get_version.outputs.version }}"
+        title: "🔖 Release v${{ steps.get_version.outputs.version }}"
+        body: |
+          ## 🚀 Release v${{ steps.get_version.outputs.version }}
+          
+          This PR bumps the version and prepares for release.
+          
+          **Changes:**
+          - Version bumped from previous to v${{ steps.get_version.outputs.version }}
+          
+          **Next Steps:**
+          1. Review and merge this PR
+          2. Create a GitHub Release with tag v${{ steps.get_version.outputs.version }}
+          3. NPM publish will happen automatically
+          
+          **Release Checklist:**
+          - [ ] Changelog updated
+          - [ ] Version bump is correct
+          - [ ] All tests passing
+          - [ ] Ready for production
+        branch: release/v${{ steps.get_version.outputs.version }}
+        delete-branch: true

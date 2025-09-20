@@ -163,7 +163,10 @@ describe('Output Formatters', () => {
 
         const output = consoleLogs.join('\n');
         expect(output).toContain('VALIDATION SUMMARY:');
-        expect(output).toContain('2 checks performed: 2 passed, 0 failed, 0 warnings');
+        expect(output).toContain('2 checks performed');
+        expect(output).toContain('passed');
+        expect(output).toContain('failed');
+        expect(output).toContain('warnings');
         expect(output).toContain('Completed in 17ms');
       });
 

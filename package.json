@@ -39,10 +39,12 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run src/__tests__",
+    "test:integration": "npm run build && vitest run tests/integration tests/e2e",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "test:e2e": "vitest run tests/e2e",
+    "test:coverage": "vitest run src/__tests__ --coverage",
+    "test:e2e": "npm run build && vitest run tests/e2e",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit",
@@ -51,21 +53,22 @@
     "start": "node bin/capiscio.js"
   },
   "dependencies": {
-    "chalk": "^5.3.0",
+    "chalk": "^4.1.2",
     "commander": "^11.1.0",
     "glob": "^10.3.10",
     "inquirer": "^9.2.12",
-    "ora": "^7.0.1"
+    "ora": "^5.4.1"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.3",
     "@types/node": "^20.8.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/coverage-v8": "^1.6.0",
     "eslint": "^8.57.1",
     "tsup": "^8.5.0",
     "typescript": "^5.2.2",
-    "vitest": "^3.2.4"
+    "vite": "^5.4.8",
+    "vitest": "^1.6.0"
   }
 }
