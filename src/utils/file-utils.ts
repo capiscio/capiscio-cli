@@ -52,8 +52,9 @@ export async function readAgentCard(filePath: string): Promise<AgentCard> {
  */
 export function isUrl(input: string): boolean {
   try {
-    new URL(input);
-    return true;
+    const url = new URL(input);
+    // Only consider http and https protocols as valid URLs
+    return url.protocol === 'http:' || url.protocol === 'https:';
   } catch {
     return false;
   }
@@ -72,7 +73,7 @@ export async function resolveInput(input: string | undefined): Promise<{ type: '
     return null;
   }
 
-  // Check if input is a URL
+  // Check if input is a URL (starts with http/https or is a valid URL)
   if (isUrl(input)) {
     return { type: 'url', value: input };
   }
@@ -82,10 +83,13 @@ export async function resolveInput(input: string | undefined): Promise<{ type: '
     return { type: 'file', value: input };
   }
 
-  // If file doesn't exist, treat as URL (let HTTP client handle the error)
-  if (input.includes('.') && !input.includes(' ')) {
-    return { type: 'url', value: input.startsWith('http') ? input : `https://${input}` };
+  // If it looks like a domain (has dots but no slashes/backslashes and no file extension-like ending)
+  if (input.includes('.') && !input.includes('/') && !input.includes('\\') && 
+      !input.endsWith('.json') && !input.endsWith('.js') && !input.endsWith('.txt') &&
+      !input.includes(' ')) {
+    return { type: 'url', value: `https://${input}` };
   }
 
-  throw new Error(`Input "${input}" is neither a valid file path nor a URL`);
+  // Otherwise, it's a missing file
+  throw new Error(`File not found: ${input}`);
 }
