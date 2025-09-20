@@ -6,10 +6,10 @@ export default defineConfig({
     environment: 'node',
     
     // Run tests serially to avoid build race conditions
-    pool: 'threads',
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: true
+      forks: {
+        singleFork: true
       }
     },
     
