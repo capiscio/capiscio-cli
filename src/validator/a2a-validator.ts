@@ -127,7 +127,7 @@ export class A2AValidator {
     const warnings: any[] = [];
     const suggestions: any[] = [];
     
-    const startTime = Date.now();
+    // Schema validation timing is handled within validateSchema
 
     // 1. Schema Validation
     const schemaResult = await this.validateSchema(card);
@@ -364,7 +364,7 @@ export class A2AValidator {
     return { success, errors, warnings, duration };
   }
 
-  private validateVersionCompatibility(card: AgentCard, strictness: string) {
+  private validateVersionCompatibility(card: AgentCard, _strictness: string) {
     const detectedVersion = card.protocolVersion;
     const targetVersion = '0.3.0';
     const mismatches: VersionMismatch[] = [];
