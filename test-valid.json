@@ -1,0 +1,11 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Test Agent",
+  "description": "A test agent",
+  "url": "https://example.com/agent",
+  "preferredTransport": "HTTP+JSON",
+  "provider": {
+    "organization": "Test Corp"
+  },
+  "version": "1.0.0"
+}

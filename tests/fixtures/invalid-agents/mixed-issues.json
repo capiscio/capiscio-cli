@@ -1,0 +1,21 @@
+{
+  "protocolVersion": "0.1.0",
+  "name": "Mixed Issues Agent",
+  "description": "Agent with multiple validation issues",
+  "url": "not-a-url",
+  "preferredTransport": "INVALID_TRANSPORT",
+  "provider": {
+    "organization": "Test Corp"
+  },
+  "version": "not-semver",
+  "iconUrl": "also-not-a-url",
+  "capabilities": {
+    "streaming": true
+  },
+  "additionalInterfaces": [
+    {
+      "url": "invalid-grpc-url",
+      "transport": "GRPC"
+    }
+  ]
+}

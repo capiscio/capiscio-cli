@@ -1,0 +1,11 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Invalid URL Agent",
+  "description": "Agent with invalid URL format",
+  "url": "not-a-valid-url",
+  "preferredTransport": "HTTP+JSON",
+  "provider": {
+    "organization": "Test Corp"
+  },
+  "version": "1.0.0"
+}

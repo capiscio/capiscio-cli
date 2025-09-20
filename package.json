@@ -1,0 +1,71 @@
+{
+  "name": "capiscio-cli",
+  "version": "1.0.0",
+  "description": "The definitive CLI tool for validating A2A (Agent-to-Agent) protocol agent cards",
+  "keywords": [
+    "a2a",
+    "agent",
+    "validation",
+    "cli",
+    "protocol",
+    "ai",
+    "llm",
+    "agent-to-agent"
+  ],
+  "homepage": "https://capisc.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/capiscio/capiscio-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/capiscio/capiscio-cli/issues"
+  },
+  "license": "MIT",
+  "author": "Capiscio Team",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "capiscio": "./bin/capiscio.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "vitest run tests/e2e",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test",
+    "start": "node bin/capiscio.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "inquirer": "^9.2.12",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@types/inquirer": "^9.0.3",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "tsup": "^7.2.0",
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6",
+    "@vitest/coverage-v8": "^0.34.6"
+  }
+}

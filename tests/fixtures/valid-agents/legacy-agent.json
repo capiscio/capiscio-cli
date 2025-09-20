@@ -1,0 +1,24 @@
+{
+  "protocolVersion": "0.2.0",
+  "name": "Legacy Test Agent",
+  "description": "An agent card using legacy protocol version",
+  "url": "https://legacy.example.com/agent",
+  "preferredTransport": "HTTP+JSON",
+  "provider": {
+    "organization": "Legacy Systems Inc"
+  },
+  "version": "0.9.0",
+  "endpoints": [
+    {
+      "name": "primary",
+      "url": "https://legacy.example.com/api/v1",
+      "protocol": "rest",
+      "version": "1.0"
+    }
+  ],
+  "capabilities": ["generate", "analyze"],
+  "authentication": {
+    "type": "bearer",
+    "required": true
+  }
+}

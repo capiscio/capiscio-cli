@@ -1,0 +1,11 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Invalid Version Agent",
+  "description": "Agent with non-semver version",
+  "url": "https://example.com/agent",
+  "preferredTransport": "HTTP+JSON",
+  "provider": {
+    "organization": "Test Corp"
+  },
+  "version": "not-a-semver-version"
+}

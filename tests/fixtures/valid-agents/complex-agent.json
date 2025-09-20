@@ -1,0 +1,62 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Complex Test Agent",
+  "description": "A comprehensive agent card with all optional fields for testing",
+  "url": "https://api.example.com/agent",
+  "preferredTransport": "JSONRPC",
+  "provider": {
+    "organization": "Advanced AI Corp",
+    "url": "https://advancedai.com"
+  },
+  "version": "2.1.0",
+  "iconUrl": "https://api.example.com/icon.png",
+  "documentationUrl": "https://docs.example.com/agent",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": true
+  },
+  "additionalInterfaces": [
+    {
+      "url": "https://grpc.example.com:443",
+      "transport": "GRPC"
+    },
+    {
+      "url": "https://ws.example.com/socket",
+      "transport": "HTTP+JSON"
+    }
+  ],
+  "skills": [
+    {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on prompts",
+      "examples": [
+        "Write a story about a robot",
+        "Explain quantum computing",
+        "Create a marketing email"
+      ]
+    },
+    {
+      "id": "code-analysis",
+      "name": "Code Analysis",
+      "description": "Analyze and review code for bugs and improvements",
+      "examples": [
+        "Review this Python function",
+        "Find security vulnerabilities",
+        "Suggest performance optimizations"
+      ]
+    }
+  ],
+  "securitySchemes": {
+    "bearerAuth": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}

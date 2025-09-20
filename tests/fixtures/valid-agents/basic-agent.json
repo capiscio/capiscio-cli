@@ -1,0 +1,11 @@
+{
+  "protocolVersion": "0.3.0",
+  "name": "Basic Test Agent",
+  "description": "A minimal valid agent card for testing",
+  "url": "https://example.com/agent",
+  "preferredTransport": "JSONRPC",
+  "provider": {
+    "organization": "Test Corporation"
+  },
+  "version": "1.0.0"
+}

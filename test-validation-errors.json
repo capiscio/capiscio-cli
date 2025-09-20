@@ -1,0 +1,7 @@
+{
+  "name": "Test Agent",
+  "description": "Test agent with validation errors",
+  "url": "invalid-url",
+  "preferredTransport": "INVALID_TRANSPORT",
+  "version": "not-semver"
+}
