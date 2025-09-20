@@ -5,11 +5,6 @@ on:
     types: [published]
   # Also support manual workflow dispatch for emergency releases
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.1)'
-        required: true
-        type: string
 
 jobs:
   publish:
@@ -48,10 +43,6 @@ jobs:
       run: |
         node dist/cli.js --version
         node dist/cli.js --help
-        
-    - name: Update version (if manual dispatch)
-      if: github.event_name == 'workflow_dispatch'
-      run: npm version ${{ github.event.inputs.version }} --no-git-tag-version
         
     - name: Publish to NPM
       run: npm publish --access public --provenance
