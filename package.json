@@ -12,7 +12,6 @@
     "llm",
     "agent-to-agent"
   ],
-  "homepage": "https://capisc.io",
   "repository": {
     "type": "git",
     "url": "https://github.com/capiscio/capiscio-cli.git"

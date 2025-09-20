@@ -7,9 +7,8 @@
 ## 📞 Support
 
 - 🐛 [Bug Reports](https://github.com/capiscio/capiscio-cli/issues)
-- 💬 [Discussions](https://github.com/capiscio/capiscio-cli/discussions)
-- 📖 [Documentation](https://capiscio.dev/cli)
-- 🔒 [Security Policy](SECURITY.md)
+- � [Security Policy](SECURITY.md)
+- � [Security Issues](mailto:security@capiscio.dev)
 
 ## 📚 Documentation
 
@@ -17,7 +16,9 @@
 - **[API Reference](docs/api-reference.md)** - Programmatic usage documentation
 - **[Architecture](docs/architecture.md)** - Internal design and extensibility
 - **[Changelog](CHANGELOG.md)** - Version history and release notes
-- **[Contributing](CONTRIBUTING.md)** - Development and contribution guidepeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+- **[Contributing](CONTRIBUTING.md)** - Development and contribution guide
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
 ## 🚀 Quick Start
 
@@ -380,9 +381,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ## 📞 Support
 
 - 🐛 [Bug Reports](https://github.com/capiscio/capiscio-cli/issues)
-- 💬 [Discussions](https://github.com/capiscio/capiscio-cli/discussions)
-- 📖 [Documentation](https://capisc.io/cli)
+- � [Security Issues](mailto:security@capiscio.dev)
 
 ---
 
-Built with ❤️ by the [Capiscio](https://capisc.io) team.
+Built with ❤️ by the [Capiscio](https://github.com/capiscio) team.
