@@ -1,0 +1,20 @@
+# Global code owners
+* @beonde
+
+# Core validator logic requires extra scrutiny
+/src/validator/ @beonde
+/src/types/ @beonde
+
+# Documentation changes
+/docs/ @beonde
+/README.md @beonde
+/CHANGELOG.md @beonde
+
+# CI/CD and build configuration
+/.github/ @beonde
+/package.json @beonde
+/tsconfig.json @beonde
+/tsup.config.ts @beonde
+
+# Test files
+/tests/ @beonde
