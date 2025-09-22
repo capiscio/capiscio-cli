@@ -82,6 +82,7 @@ export interface ValidationOptions {
   skipDynamic?: boolean;
   suggestions?: boolean;
   showVersionCompat?: boolean;
+  verbose?: boolean;
 }
 
 export interface VersionCompatibility {

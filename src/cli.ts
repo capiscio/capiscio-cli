@@ -7,7 +7,7 @@ const program = new Command();
 program
   .name('capiscio')
   .description('The definitive CLI tool for validating A2A (Agent-to-Agent) protocol agent cards')
-  .version('1.0.0');
+  .version('1.1.0');
 
 // Register commands
 ValidateCommand.register(program);

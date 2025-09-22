@@ -1,7 +1,19 @@
 import { HttpClient, HttpResponse, HttpError, RequestOptions } from '../types';
+import { Logger } from '../utils/logger';
 
 export class FetchHttpClient implements HttpClient {
+  private logger?: Logger;
+
+  constructor(logger?: Logger) {
+    if (logger) {
+      this.logger = logger;
+    }
+  }
+
   async get(url: string, options: RequestOptions = {}): Promise<HttpResponse> {
+    const startTime = Date.now();
+    this.logger?.debug(`Initiating HTTP GET request to ${url}`);
+    
     const controller = new AbortController();
     const timeout = setTimeout(
       () => controller.abort(), 
@@ -13,15 +25,19 @@ export class FetchHttpClient implements HttpClient {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'capiscio-cli/1.0.0',
+          'User-Agent': 'capiscio-cli/1.1.0',
           ...options.headers
         },
         signal: options.signal || controller.signal
       });
 
       clearTimeout(timeout);
+      const duration = Date.now() - startTime;
+      
+      this.logger?.network('GET', url, response.status, duration);
 
       if (!response.ok) {
+        this.logger?.error(`HTTP request failed: ${response.status} ${response.statusText}`);
         throw new HttpError(
           `HTTP ${response.status}: ${response.statusText}`, 
           response.status,
