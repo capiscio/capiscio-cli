@@ -16,7 +16,7 @@ We take the security of Capiscio CLI seriously. If you believe you have found a 
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them via email to: security@capiscio.dev
+Instead, please report them via email to: security@capisc.io
 
 You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
@@ -125,7 +125,7 @@ This policy does not cover:
 ## Contact
 
 For general security questions (not vulnerability reports), please contact:
-security@capiscio.dev
+security@capisc.io
 
 For urgent security matters, you may also reach out via:
 - GitHub Security Advisory (for confirmed vulnerabilities)
