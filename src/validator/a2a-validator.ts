@@ -1,6 +1,7 @@
 import { AgentCard, ValidationResult, ValidationOptions, HttpClient, VersionMismatch } from '../types';
 import { FetchHttpClient } from './http-client';
 import { semverCompare, isValidSemver } from '../utils/semver';
+import { Logger } from '../utils/logger';
 
 /**
  * A2A Validator with URL support and embedded validation logic
@@ -10,15 +11,30 @@ import { semverCompare, isValidSemver } from '../utils/semver';
  */
 export class A2AValidator {
   private httpClient: HttpClient;
+  private logger: Logger;
 
   constructor(httpClient?: HttpClient) {
     this.httpClient = httpClient || new FetchHttpClient();
+    this.logger = new Logger(false); // Will be enabled per validation
   }
 
   async validate(
     input: AgentCard | string, 
     options: ValidationOptions = {}
   ): Promise<ValidationResult> {
+    // Initialize logger with verbose setting
+    this.logger = new Logger(options.verbose || false);
+    
+    // Update HTTP client with logger if it's our default client
+    if (this.httpClient instanceof FetchHttpClient && options.verbose) {
+      this.httpClient = new FetchHttpClient(this.logger);
+    }
+    
+    this.logger.debug('Starting A2A validation', { 
+      inputType: typeof input,
+      options: { ...options, verbose: undefined } // Don't log verbose flag itself
+    });
+
     try {
       let agentCard: AgentCard;
       let usedLegacyEndpoint = false;
@@ -27,13 +43,25 @@ export class A2AValidator {
       // Determine if input is a URL or local file path
       if (typeof input === 'string') {
         const isUrl = this.isValidUrl(input) || (!input.includes('\\') && !input.includes('/') && !input.endsWith('.json'));
+        this.logger.debug(`Input type detected: ${isUrl ? 'URL' : 'local file'}`, { input, isUrl });
         
         if (isUrl && !options.skipDynamic) {
           // Remote URL - fetch the agent card
+          this.logger.step('Fetching agent card from URL');
+          const fetchTimer = this.logger.timer();
           const fetchResult = await this.fetchAgentCard(input);
+          const fetchDuration = fetchTimer();
+          this.logger.timing('Agent card fetch', fetchDuration);
+          
           agentCard = fetchResult.card;
           usedLegacyEndpoint = fetchResult.usedLegacyEndpoint;
           discoveryUrl = fetchResult.discoveryUrl;
+          
+          this.logger.debug('Agent card fetched successfully', { 
+            usedLegacyEndpoint, 
+            discoveryUrl,
+            cardSize: JSON.stringify(agentCard).length 
+          });
         } else if (isUrl && options.skipDynamic) {
           // URL provided but schema-only mode requested
           return {
@@ -235,14 +263,21 @@ export class A2AValidator {
     const errors: any[] = [];
     const warnings: any[] = [];
 
+    this.logger.step('Validating schema structure');
+
     // Required fields validation
     const requiredFields = ['name', 'description', 'url', 'provider', 'version'];
     
     // A2A v0.3.0 specific required fields
     const v030RequiredFields = ['protocolVersion', 'preferredTransport'];
     
+    this.logger.debug('Checking required fields', { 
+      requiredFields: [...requiredFields, ...v030RequiredFields] 
+    });
+    
     [...requiredFields, ...v030RequiredFields].forEach(field => {
       if (!this.getNestedValue(card, field)) {
+        this.logger.debug(`Missing required field: ${field}`);
         errors.push({
           code: 'SCHEMA_VALIDATION_ERROR',
           message: `${field}: Required`,
@@ -255,6 +290,7 @@ export class A2AValidator {
 
     // Version format validation
     if (card.version && !isValidSemver(card.version)) {
+      this.logger.debug(`Invalid version format: ${card.version}`);
       errors.push({
         code: 'SCHEMA_VALIDATION_ERROR',
         message: 'version: Version must follow semver format',
@@ -360,6 +396,13 @@ export class A2AValidator {
 
     const duration = Date.now() - startTime;
     const success = errors.length === 0;
+
+    this.logger.step('Schema validation completed', duration);
+    this.logger.debug('Schema validation results', { 
+      success, 
+      errorCount: errors.length, 
+      warningCount: warnings.length 
+    });
 
     return { success, errors, warnings, duration };
   }

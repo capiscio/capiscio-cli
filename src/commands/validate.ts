@@ -20,6 +20,7 @@ export class ValidateCommand {
       .option('--schema-only', 'Validate schema only, skip endpoint testing')
       .option('--json', 'Output results in JSON format')
       .option('--errors-only', 'Show only errors and warnings')
+      .option('--verbose', 'Show detailed validation steps and timing')
       .option('--timeout <ms>', 'Request timeout in milliseconds', '10000')
       .option('--show-version', 'Display detailed version compatibility analysis')
       .action(async (input, options) => {
@@ -61,6 +62,7 @@ export class ValidateCommand {
         strictness: this.getStrictness(options),
         timeout: parseInt(options.timeout || '10000'),
         skipDynamic: options.schemaOnly || resolved.type === 'file',
+        verbose: options.verbose || false,
         ...(options.registryReady !== undefined && { registryReady: options.registryReady }),
         ...(options.showVersion !== undefined && { showVersionCompat: options.showVersion })
       };
