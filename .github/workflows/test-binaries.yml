@@ -8,6 +8,11 @@ on:
         type: boolean
         default: false
 
+# Minimal permissions for testing
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   test-cross-platform:
     name: Test ${{ matrix.platform }} Binary
