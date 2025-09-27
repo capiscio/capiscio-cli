@@ -26,14 +26,24 @@ jobs:
             binary: capiscio-linux-x64
             
           - os: macos-latest
-            platform: macOS
+            platform: macOS (Intel)
             target: node18-macos-x64
             binary: capiscio-darwin-x64
             
+          - os: macos-latest
+            platform: macOS (ARM64)
+            target: node18-macos-arm64
+            binary: capiscio-darwin-arm64
+            
           - os: windows-latest
-            platform: Windows
+            platform: Windows (Intel)
             target: node18-win-x64
             binary: capiscio-win-x64.exe
+            
+          - os: windows-latest
+            platform: Windows (ARM64)  
+            target: node18-win-arm64
+            binary: capiscio-win-arm64.exe
 
     steps:
       - name: Checkout repository

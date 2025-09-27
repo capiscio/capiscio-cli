@@ -30,7 +30,9 @@ try {
 const platforms = [
   { target: 'node18-linux-x64', name: 'capiscio-linux-x64' },
   { target: 'node18-macos-x64', name: 'capiscio-darwin-x64' },
-  { target: 'node18-win-x64', name: 'capiscio-win-x64.exe' }
+  { target: 'node18-macos-arm64', name: 'capiscio-darwin-arm64' },
+  { target: 'node18-win-x64', name: 'capiscio-win-x64.exe' },
+  { target: 'node18-win-arm64', name: 'capiscio-win-arm64.exe' }
 ];
 
 console.log('🏗️  Creating platform binaries...');

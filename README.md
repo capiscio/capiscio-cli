@@ -39,16 +39,23 @@ capiscio validate ./agent-card.json --strict --json
 ### Option 2: Download Standalone Binary (No Node.js Required)
 ```bash
 # Download from GitHub Releases (replace VERSION with latest)
-# Linux
+# Linux x64
 curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-linux-x64
 chmod +x capiscio
 
-# macOS
+# macOS Intel
 curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-darwin-x64
 chmod +x capiscio
 
-# Windows (PowerShell)
+# macOS Apple Silicon (M1/M2/M3)
+curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-darwin-arm64
+chmod +x capiscio
+
+# Windows Intel (PowerShell)
 Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-win-x64.exe" -OutFile "capiscio.exe"
+
+# Windows ARM64 (PowerShell)  
+Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-win-arm64.exe" -OutFile "capiscio.exe"
 
 # Use the binary
 ./capiscio validate ./agent-card.json

@@ -32,10 +32,20 @@ jobs:
             target: node18-macos-x64
             binary_name: capiscio-darwin-x64
             
+          - os: macos-latest
+            platform: darwin
+            target: node18-macos-arm64
+            binary_name: capiscio-darwin-arm64
+            
           - os: windows-latest
             platform: win32
             target: node18-win-x64
             binary_name: capiscio-win-x64.exe
+            
+          - os: windows-latest
+            platform: win32
+            target: node18-win-arm64
+            binary_name: capiscio-win-arm64.exe
 
     steps:
       - name: Checkout repository
@@ -70,6 +80,11 @@ jobs:
           npx pkg dist/cli-bundled.js \
             --targets ${{ matrix.target }} \
             --output dist/binaries/${{ matrix.binary_name }}
+
+      - name: Sign macOS binary (ad-hoc)
+        if: runner.os == 'macOS'
+        run: |
+          codesign --sign - --force --deep dist/binaries/${{ matrix.binary_name }}
 
       - name: Test binary (Unix)
         if: runner.os != 'Windows'
