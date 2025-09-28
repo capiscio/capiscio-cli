@@ -1,19 +1,6 @@
 # Capiscio CLI - A2A Protocol Validator
 
-> **A### Key Options
-
-| Option | Description |
-|--------|-----------|
-| `--strict` | Strict A2A protocol compliance |
-| `--progressive` | Progressive validation mode (default) |
-| `--conservative` | Conservative validation for development |
-| `--registry-ready` | Check registry deployment readiness |
-| `--json` | JSON output for CI/CD |
-| `--verbose` | Detailed validation steps |
-| `--errors-only` | Show only errors and warnings |
-| `--timeout <ms>` | Request timeout (default: 10000) |
-| `--schema-only` | Skip live endpoint testing |
-| `--show-version` | Version compatibility analysis |alidator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
+> **Validator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
 
 [![npm version](https://badge.fury.io/js/capiscio-cli.svg)](https://badge.fury.io/js/capiscio-cli)
 [![Downloads](https://img.shields.io/npm/dm/capiscio-cli)](https://www.npmjs.com/package/capiscio-cli)
@@ -37,25 +24,34 @@ capiscio validate ./agent-card.json --strict --json
 ```
 
 ### Option 2: Download Standalone Binary (No Node.js Required)
+
+| Platform | Architecture | Download | Size |
+|----------|-------------|----------|------|
+| **Linux** | x64 | [`capiscio-linux-x64`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64) | ~50MB |
+| **macOS** | Intel | [`capiscio-darwin-x64`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64) | ~54MB |
+| **macOS** | Apple Silicon | [`capiscio-darwin-arm64`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64) | ~48MB |
+| **Windows** | Intel x64 | [`capiscio-win-x64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe) | ~41MB |
+| **Windows** | ARM64 | [`capiscio-win-arm64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe) | ~29MB |
+
+#### Quick Download Commands:
 ```bash
-# Download from GitHub Releases (replace VERSION with latest)
 # Linux x64
-curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-linux-x64
+curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64
 chmod +x capiscio
 
 # macOS Intel
-curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-darwin-x64
+curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64
 chmod +x capiscio
 
-# macOS Apple Silicon (M1/M2/M3)
-curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-darwin-arm64
+# macOS Apple Silicon (M1/M2/M3/M4)
+curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64
 chmod +x capiscio
 
 # Windows Intel (PowerShell)
-Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-win-x64.exe" -OutFile "capiscio.exe"
+Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe" -OutFile "capiscio.exe"
 
 # Windows ARM64 (PowerShell)  
-Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/download/v1.1.0/capiscio-win-arm64.exe" -OutFile "capiscio.exe"
+Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe" -OutFile "capiscio.exe"
 
 # Use the binary
 ./capiscio validate ./agent-card.json
@@ -64,10 +60,12 @@ Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/downlo
 ## Key Features
 
 - **🚀 Transport Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints
-- **🔍 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
+- **� Cross-Platform Binaries** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
+- **�🔍 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
 - **⚡ Three Validation Modes** - Progressive, strict, and conservative
 - **🔧 CI/CD Ready** - JSON output with proper exit codes
 - **🌐 Live Endpoint Testing** - Validates real connectivity, not just schemas
+- **⚡ No Dependencies** - Standalone binaries require no Node.js installation
 
 ## Usage
 
@@ -131,12 +129,23 @@ Perfect for testing your own agents and evaluating third-party agents before int
 
 ## CI/CD Integration
 
+### Using NPM Package:
 ```yaml
 # GitHub Actions
 - name: Validate Agent
   run: |
     npm install -g capiscio-cli
     capiscio validate ./agent-card.json --json --strict
+```
+
+### Using Standalone Binary:
+```yaml
+# GitHub Actions - No Node.js required
+- name: Download and Validate Agent
+  run: |
+    curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64
+    chmod +x capiscio
+    ./capiscio validate ./agent-card.json --json --strict
 ```
 
 Exit codes: 0 = success, 1 = validation failed

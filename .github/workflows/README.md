@@ -11,17 +11,19 @@ This directory contains the CI/CD workflows for the capiscio-cli project.
 - Runs tests on Node.js 18.x and 20.x
 - Performs linting and type checking
 - Tests CLI functionality on both Node.js versions  
-- **NEW**: Tests binary building process on Linux
+- Tests binary building process (Linux) on PRs and main pushes
 - Runs security audit
+- Skips CI for docs-only changes to optimize resource usage
 
 ### 🚀 `release-binaries.yml` - Automated Binary Release
 **Trigger**: GitHub Release published, Manual dispatch
 
 **What it does**:
-- Builds cross-platform binaries (Linux, macOS, Windows)
+- Builds 5 cross-platform binaries (Linux x64, macOS Intel/ARM, Windows Intel/ARM)
 - Tests each binary on its native platform
-- Uploads binaries to GitHub Release
-- Creates SHA256 checksums
+- Signs macOS binaries for distribution compliance
+- Uploads all binaries to GitHub Release
+- Creates SHA256 checksums for verification
 - Can be triggered manually for testing
 
 **Usage**:
@@ -84,11 +86,13 @@ npm run build:binaries
 
 ## Binary Details
 
-| Platform | Target | Output | Size |
-|----------|--------|--------|------|
-| Linux x64 | `node18-linux-x64` | `capiscio-linux-x64` | ~50MB |
-| macOS x64 | `node18-macos-x64` | `capiscio-darwin-x64` | ~54MB |  
-| Windows x64 | `node18-win-x64` | `capiscio-win-x64.exe` | ~41MB |
+| Platform | Architecture | Target | Output | Size |
+|----------|-------------|--------|--------|------|
+| Linux | x64 | `node18-linux-x64` | `capiscio-linux-x64` | ~50MB |
+| macOS | Intel x64 | `node18-macos-x64` | `capiscio-darwin-x64` | ~54MB |  
+| macOS | ARM64 | `node18-macos-arm64` | `capiscio-darwin-arm64` | ~48MB |
+| Windows | Intel x64 | `node18-win-x64` | `capiscio-win-x64.exe` | ~41MB |
+| Windows | ARM64 | `node18-win-arm64` | `capiscio-win-arm64.exe` | ~29MB |
 
 ## Security
 
