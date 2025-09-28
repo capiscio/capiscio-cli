@@ -1,0 +1,163 @@
+name: Build and Release Binaries
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to build binaries for (e.g., v1.1.0)'
+        required: true
+        default: 'v1.1.0'
+
+# Explicit permissions for security
+permissions:
+  contents: write  # Needed to upload release assets
+  actions: read
+
+jobs:
+  build-binaries:
+    name: Build ${{ matrix.platform }} Binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: node18-linux-x64
+            binary_name: capiscio-linux-x64
+            
+          - os: macos-latest
+            platform: darwin
+            target: node18-macos-x64
+            binary_name: capiscio-darwin-x64
+            
+          - os: macos-latest
+            platform: darwin
+            target: node18-macos-arm64
+            binary_name: capiscio-darwin-arm64
+            
+          - os: windows-latest
+            platform: win32
+            target: node18-win-x64
+            binary_name: capiscio-win-x64.exe
+            
+          - os: windows-latest
+            platform: win32
+            target: node18-win-arm64
+            binary_name: capiscio-win-arm64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Bundle CLI with esbuild
+        run: |
+          npx esbuild src/cli.ts \
+            --bundle \
+            --platform=node \
+            --target=node18 \
+            --outfile=dist/cli-bundled.js \
+            --banner:js="#!/usr/bin/env node"
+
+      - name: Create binary directory
+        run: mkdir -p dist/binaries
+
+      - name: Create binary with pkg
+        run: |
+          npx pkg dist/cli-bundled.js \
+            --targets ${{ matrix.target }} \
+            --output dist/binaries/${{ matrix.binary_name }}
+
+      - name: Sign macOS binary (ad-hoc)
+        if: runner.os == 'macOS'
+        run: |
+          codesign --sign - --force --deep dist/binaries/${{ matrix.binary_name }}
+
+      - name: Test binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x dist/binaries/${{ matrix.binary_name }}
+          ./dist/binaries/${{ matrix.binary_name }} --version
+
+      - name: Test binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          dist\binaries\${{ matrix.binary_name }} --version
+
+      - name: Upload binary to release (on release)
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/binaries/${{ matrix.binary_name }}
+          asset_name: ${{ matrix.binary_name }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload binary artifact (on manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: dist/binaries/${{ matrix.binary_name }}
+          retention-days: 7
+
+  # Job to create checksums and summary
+  create-checksums:
+    name: Create Checksums
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    
+    steps:
+      - name: Download Linux binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-linux-x64
+          
+      - name: Download macOS binary  
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-darwin-x64
+          
+      - name: Download Windows binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-win-x64.exe
+
+      - name: Create checksums
+        run: |
+          echo "# Binary Checksums" > checksums.md
+          echo "" >> checksums.md
+          echo "SHA256 checksums for release ${{ github.event.release.tag_name }}:" >> checksums.md
+          echo "" >> checksums.md
+          echo '```' >> checksums.md
+          sha256sum capiscio-* >> checksums.md
+          echo '```' >> checksums.md
+          
+          # Also create a checksums.txt file
+          sha256sum capiscio-* > checksums.txt
+
+      - name: Upload checksums to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: checksums.txt
+          asset_name: checksums.txt
+          asset_content_type: text/plain

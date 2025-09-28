@@ -1,0 +1,161 @@
+name: Manual - Test Cross-Platform Binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_validation:
+        description: 'Test actual validation functionality'
+        type: boolean
+        default: false
+
+# Minimal permissions for testing
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test-cross-platform:
+    name: Test ${{ matrix.platform }} Binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: Linux
+            target: node18-linux-x64
+            binary: capiscio-linux-x64
+            
+          - os: macos-latest
+            platform: macOS (Intel)
+            target: node18-macos-x64
+            binary: capiscio-darwin-x64
+            
+          - os: macos-latest
+            platform: macOS (ARM64)
+            target: node18-macos-arm64
+            binary: capiscio-darwin-arm64
+            
+          - os: windows-latest
+            platform: Windows (Intel)
+            target: node18-win-x64
+            binary: capiscio-win-x64.exe
+            
+          - os: windows-latest
+            platform: Windows (ARM64)  
+            target: node18-win-arm64
+            binary: capiscio-win-arm64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and create binary
+        run: npm run build:binaries
+
+      - name: Test binary basic commands (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          echo "Testing ${{ matrix.platform }} binary..."
+          ls -la dist/binaries/
+          
+          # Test basic commands
+          ./dist/binaries/${{ matrix.binary }} --version
+          ./dist/binaries/${{ matrix.binary }} --help
+          ./dist/binaries/${{ matrix.binary }} validate --help
+
+      - name: Test binary basic commands (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "Testing ${{ matrix.platform }} binary..."
+          dir dist\binaries\
+          
+          # Test basic commands
+          dist\binaries\${{ matrix.binary }} --version
+          dist\binaries\${{ matrix.binary }} --help
+          dist\binaries\${{ matrix.binary }} validate --help
+
+      - name: Create test agent card
+        run: |
+          mkdir -p test-data
+          cat > test-data/test-agent.json << 'EOF'
+          {
+            "protocolVersion": "0.3.0",
+            "name": "Test Agent",
+            "description": "A test agent for binary validation",
+            "url": "https://example.com/test-agent",
+            "preferredTransport": "JSONRPC",
+            "provider": {
+              "organization": "Test Org"
+            },
+            "version": "1.0.0"
+          }
+          EOF
+
+      - name: Test validation functionality (Unix)
+        if: runner.os != 'Windows' && github.event.inputs.test_validation == 'true'
+        run: |
+          echo "Testing validation functionality..."
+          ./dist/binaries/${{ matrix.binary }} validate test-data/test-agent.json --schema-only
+
+      - name: Test validation functionality (Windows)
+        if: runner.os == 'Windows' && github.event.inputs.test_validation == 'true'
+        run: |
+          echo "Testing validation functionality..."
+          dist\binaries\${{ matrix.binary }} validate test-data/test-agent.json --schema-only
+
+      - name: Upload binary for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary }}
+          path: dist/binaries/${{ matrix.binary }}
+          retention-days: 1
+
+  summary:
+    name: Test Summary
+    needs: test-cross-platform
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries/
+
+      - name: Create test summary
+        run: |
+          echo "# Cross-Platform Binary Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **All platform binaries built successfully!**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Binary Information:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          for dir in binaries/*/; do
+            if [ -d "$dir" ]; then
+              binary_name=$(basename "$dir")
+              binary_file="$dir$binary_name"
+              if [ -f "$binary_file" ]; then
+                size=$(stat -c%s "$binary_file" 2>/dev/null || stat -f%z "$binary_file" 2>/dev/null || echo "unknown")
+                size_mb=$((size / 1024 / 1024))
+                echo "- **$binary_name**: ${size_mb}MB" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Usage:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download any binary from the artifacts section above and run:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo './capiscio-linux-x64 --version' >> $GITHUB_STEP_SUMMARY
+          echo './capiscio-linux-x64 validate your-agent.json' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
