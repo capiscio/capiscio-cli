@@ -67,21 +67,14 @@ jobs:
 
       - name: Bundle CLI with esbuild
         run: |
-          npx esbuild src/cli.ts \
-            --bundle \
-            --platform=node \
-            --target=node18 \
-            --outfile=dist/cli-bundled.js \
-            --banner:js="#!/usr/bin/env node"
+          npx esbuild src/cli.ts --bundle --platform=node --target=node18 --outfile=dist/cli-bundled.js --banner:js="#!/usr/bin/env node"
 
       - name: Create binary directory
         run: mkdir -p dist/binaries
 
       - name: Create binary with pkg
         run: |
-          npx pkg dist/cli-bundled.js \
-            --targets ${{ matrix.target }} \
-            --output dist/binaries/${{ matrix.binary_name }}
+          npx pkg dist/cli-bundled.js --targets ${{ matrix.target }} --output dist/binaries/${{ matrix.binary_name }}
 
       - name: Sign macOS binary (ad-hoc)
         if: runner.os == 'macOS'

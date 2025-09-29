@@ -51,25 +51,28 @@ capiscio validate ./agent-card.json --strict --json
 
 | Platform | Architecture | Download | Size |
 |----------|-------------|----------|------|
-| **Linux** | x64 | [`capiscio-linux-x64`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64) | ~50MB |
-| **macOS** | Intel | [`capiscio-darwin-x64`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64) | ~54MB |
-| **macOS** | Apple Silicon | [`capiscio-darwin-arm64`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64) | ~48MB |
-| **Windows** | Intel x64 | [`capiscio-win-x64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe) | ~41MB |
-| **Windows** | ARM64 | [`capiscio-win-arm64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe) | ~29MB |
+| **Linux** | x64 | [`capiscio-linux-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz) | ~18MB |
+| **macOS** | Intel | [`capiscio-darwin-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz) | ~48MB |
+| **macOS** | Apple Silicon | [`capiscio-darwin-arm64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz) | ~44MB |
+| **Windows** | Intel x64 | [`capiscio-win-x64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe) | ~45MB |
+| **Windows** | ARM64 | [`capiscio-win-arm64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe) | ~42MB |
 
 #### Quick Download Commands:
 ```bash
 # Linux x64
-curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64
-chmod +x capiscio
+curl -L -o capiscio-linux-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz
+tar -xzf capiscio-linux-x64.tar.gz
+chmod +x capiscio-linux-x64
 
 # macOS Intel
-curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64
-chmod +x capiscio
+curl -L -o capiscio-darwin-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz
+tar -xzf capiscio-darwin-x64.tar.gz
+chmod +x capiscio-darwin-x64
 
 # macOS Apple Silicon (M1/M2/M3/M4)
-curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64
-chmod +x capiscio
+curl -L -o capiscio-darwin-arm64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz
+tar -xzf capiscio-darwin-arm64.tar.gz
+chmod +x capiscio-darwin-arm64
 
 # Windows Intel (PowerShell)
 Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe" -OutFile "capiscio.exe"
@@ -78,7 +81,9 @@ Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest
 Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe" -OutFile "capiscio.exe"
 
 # Use the binary
-./capiscio validate ./agent-card.json
+./capiscio-linux-x64 validate ./agent-card.json
+# or ./capiscio-darwin-* validate ./agent-card.json
+# or .\capiscio.exe validate .\agent-card.json
 ```
 
 ## Key Features
@@ -202,9 +207,10 @@ Signature verification adds minimal overhead while providing crucial security gu
 # GitHub Actions - No Node.js required
 - name: Download and Validate Agent
   run: |
-    curl -L -o capiscio https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64
-    chmod +x capiscio
-    ./capiscio validate ./agent-card.json --json --strict
+    curl -L -o capiscio-linux-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz
+    tar -xzf capiscio-linux-x64.tar.gz
+    chmod +x capiscio-linux-x64
+    ./capiscio-linux-x64 validate ./agent-card.json --json --strict
 ```
 
 Exit codes: 0 = success, 1 = validation failed
