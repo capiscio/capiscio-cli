@@ -23,7 +23,22 @@ capiscio validate https://your-agent.com
 capiscio validate ./agent-card.json --strict --json
 ```
 
-### Option 2: Download Standalone Binary (No Node.js Required)
+### Option 2: Install via pip (Requires Python 3.7+)
+```bash
+# Install globally
+pip install capiscio
+
+# Validate your agent
+capiscio validate ./agent-card.json
+
+# Test live endpoints  
+capiscio validate https://your-agent.com
+
+# Strict validation for production
+capiscio validate ./agent-card.json --strict --json
+```
+
+### Option 3: Download Standalone Binary (No Dependencies)
 
 | Platform | Architecture | Download | Size |
 |----------|-------------|----------|------|

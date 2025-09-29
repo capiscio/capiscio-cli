@@ -1,0 +1,303 @@
+name: Build and Publish Python Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (build only, no publish)'
+        required: false
+        default: false
+        type: boolean
+
+# Explicit permissions for security
+permissions:
+  contents: read
+  id-token: write  # For PyPI trusted publishing
+
+jobs:
+  # First, we need to build all the binaries that will be included in the Python package
+  build-binaries:
+    name: Build ${{ matrix.platform }} Binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: node18-linux-x64
+            binary_name: capiscio-linux-x64
+            
+          - os: macos-latest
+            platform: darwin
+            target: node18-macos-x64
+            binary_name: capiscio-darwin-x64
+            
+          - os: macos-latest
+            platform: darwin
+            target: node18-macos-arm64
+            binary_name: capiscio-darwin-arm64
+            
+          - os: windows-latest
+            platform: win32
+            target: node18-win-x64
+            binary_name: capiscio-win-x64.exe
+            
+          - os: windows-latest
+            platform: win32
+            target: node18-win-arm64
+            binary_name: capiscio-win-arm64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Bundle CLI with esbuild
+        run: |
+          npx esbuild src/cli.ts \
+            --bundle \
+            --platform=node \
+            --target=node18 \
+            --outfile=dist/cli-bundled.js \
+            --banner:js="#!/usr/bin/env node"
+
+      - name: Create binary directory
+        run: mkdir -p dist/binaries
+
+      - name: Create binary with pkg
+        run: |
+          npx pkg dist/cli-bundled.js \
+            --targets ${{ matrix.target }} \
+            --output dist/binaries/${{ matrix.binary_name }}
+
+      - name: Sign macOS binary (ad-hoc)
+        if: runner.os == 'macOS'
+        run: |
+          codesign --sign - --force --deep dist/binaries/${{ matrix.binary_name }}
+
+      - name: Test binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x dist/binaries/${{ matrix.binary_name }}
+          ./dist/binaries/${{ matrix.binary_name }} --version
+
+      - name: Test binary (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          dist\binaries\${{ matrix.binary_name }} --version
+
+      # Upload binaries as artifacts so the build-python job can use them
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: dist/binaries/${{ matrix.binary_name }}
+          retention-days: 1
+
+  # Build and publish the Python package
+  build-python:
+    name: Build Python Package
+    needs: build-binaries
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Python build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      # Create binaries directory and download all binaries
+      - name: Create binaries directory
+        run: mkdir -p python-package/capiscio/binaries
+
+      - name: Download Linux binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-linux-x64
+          path: python-package/capiscio/binaries/
+
+      - name: Download macOS x64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-darwin-x64
+          path: python-package/capiscio/binaries/
+
+      - name: Download macOS ARM64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-darwin-arm64
+          path: python-package/capiscio/binaries/
+
+      - name: Download Windows x64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-win-x64.exe
+          path: python-package/capiscio/binaries/
+
+      - name: Download Windows ARM64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-win-arm64.exe
+          path: python-package/capiscio/binaries/
+
+      - name: Make Unix binaries executable
+        run: |
+          chmod +x python-package/capiscio/binaries/capiscio-linux-x64
+          chmod +x python-package/capiscio/binaries/capiscio-darwin-x64
+          chmod +x python-package/capiscio/binaries/capiscio-darwin-arm64
+
+      - name: Update Python package version
+        run: |
+          # Get version from package.json
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Package version: $VERSION"
+          
+          # Update pyproject.toml
+          sed -i "s/version = \"[^\"]*\"/version = \"$VERSION\"/" python-package/pyproject.toml
+          
+          # Update __init__.py
+          sed -i "s/__version__ = \"[^\"]*\"/__version__ = \"$VERSION\"/" python-package/capiscio/__init__.py
+          
+          echo "Updated version to $VERSION"
+
+      - name: Test Python wrapper
+        run: |
+          cd python-package
+          python -m capiscio.cli --version
+          python -m capiscio.cli --help
+
+      - name: Build Python package
+        run: |
+          cd python-package
+          python -m build
+
+      - name: Check package contents
+        run: |
+          cd python-package
+          echo "Package contents:"
+          python -m zipfile -l dist/*.whl | head -20
+          
+          echo -e "\nPackage sizes:"
+          ls -lh dist/
+
+      - name: Test wheel installation
+        run: |
+          cd python-package
+          pip install dist/*.whl
+          capiscio --version
+          capiscio --help
+
+      - name: Upload Python package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: python-package/dist/
+          retention-days: 7
+
+  # Publish to PyPI
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build-python
+    runs-on: ubuntu-latest
+    # Only run on actual releases, not manual dispatches with dry_run
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
+    
+    steps:
+      - name: Download Python package
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install publishing tools
+        run: pip install twine
+
+      - name: Check package before publishing
+        run: |
+          echo "Files to be published:"
+          ls -la dist/
+          
+          # Check package metadata
+          python -m twine check dist/*
+
+      # Using PyPI trusted publishing (recommended) or API token
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Use trusted publishing if configured, otherwise fall back to API token
+          # password: ${{ secrets.PYPI_API_TOKEN }}  # Uncomment if using API token
+          verbose: true
+
+  # Job to create a summary
+  summary:
+    name: Publish Summary
+    needs: [build-python, publish-pypi]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Create summary
+        run: |
+          echo "# Python Package Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.build-python.result }}" == "success" ]]; then
+            echo "✅ **Python package built successfully**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Python package build failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [[ "${{ github.event_name }}" == "release" ]] || [[ "${{ inputs.dry_run }}" != "true" ]]; then
+            if [[ "${{ needs.publish-pypi.result }}" == "success" ]]; then
+              echo "✅ **Published to PyPI successfully**" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "📦 **Install with:** \`pip install capiscio\`" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **PyPI publishing failed**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⏭️ **Skipped PyPI publishing (dry run)**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Platform Support" >> $GITHUB_STEP_SUMMARY
+          echo "- Linux x64" >> $GITHUB_STEP_SUMMARY
+          echo "- macOS x64 (Intel)" >> $GITHUB_STEP_SUMMARY  
+          echo "- macOS ARM64 (Apple Silicon)" >> $GITHUB_STEP_SUMMARY
+          echo "- Windows x64" >> $GITHUB_STEP_SUMMARY
+          echo "- Windows ARM64" >> $GITHUB_STEP_SUMMARY

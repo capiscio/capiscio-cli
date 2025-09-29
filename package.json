@@ -38,6 +38,7 @@
   "scripts": {
     "build": "tsup",
     "build:binaries": "node scripts/build-binaries.js",
+    "build:python": "node scripts/build-python-package.js",
     "dev": "tsup --watch",
     "test": "npm run test:unit",
     "test:unit": "vitest run src/__tests__",
