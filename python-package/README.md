@@ -1,6 +1,11 @@
-# Capiscio CLI - Python Package
+# Capiscio CLI - A2A Protocol Validator (Python Package)
 
-A Python package that provides the Capiscio A2A protocol validator as a pip-installable CLI tool.
+> **Validator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
+
+[![PyPI version](https://badge.fury.io/py/capiscio.svg)](https://badge.fury.io/py/capiscio)
+[![Downloads](https://img.shields.io/pypi/dm/capiscio)](https://pypi.org/project/capiscio/)
+[![Python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://python.org/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/capiscio/capiscio-cli/blob/main/LICENSE)
 
 ## Installation
 
@@ -8,43 +13,164 @@ A Python package that provides the Capiscio A2A protocol validator as a pip-inst
 pip install capiscio
 ```
 
-## Usage
+**Zero dependencies required** - This package contains pre-built native binaries that work without Python runtime dependencies.
 
-After installation, you can use the `capiscio` command directly from your terminal:
+## Quick Start
 
 ```bash
-# Validate an agent.json file
-capiscio validate agent.json
+# Validate your agent (with signature verification)
+capiscio validate ./agent-card.json
 
-# Check version
-capiscio --version
+# Test live endpoints with cryptographic verification  
+capiscio validate https://your-agent.com
 
-# Get help
-capiscio --help
+# Strict validation for production deployment
+capiscio validate ./agent-card.json --strict --json
+
+# Skip signature verification when not needed
+capiscio validate ./agent-card.json --skip-signature
 ```
 
-## What's Inside
+## Key Features
 
-This package contains pre-built binaries of the Capiscio CLI tool for multiple platforms:
-- Linux x64/ARM64
-- macOS x64/ARM64 (Intel/Apple Silicon)
-- Windows x64/ARM64
+- **🚀 Transport Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints
+- **🔐 JWS Signature Verification** - Cryptographic validation of agent cards (RFC 7515 compliant)
+- **💻 Native Binaries** - No Node.js or runtime dependencies required
+- **🔍 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
+- **⚡ Three Validation Modes** - Progressive, strict, and conservative
+- **🔧 CI/CD Ready** - JSON output with proper exit codes
+- **🌐 Live Endpoint Testing** - Validates real connectivity, not just schemas
+- **🛡️ Secure by Default** - Signature verification enabled automatically
 
-The Python wrapper automatically detects your platform and runs the appropriate binary.
+## Usage Examples
+
+### Basic Commands
+
+```bash
+capiscio validate [input] [options]
+
+# Examples
+capiscio validate                              # Auto-detect in current directory
+capiscio validate ./agent-card.json           # Validate local file (with signatures)
+capiscio validate https://agent.com           # Test live agent (with signatures)
+capiscio validate ./agent-card.json --skip-signature # Skip signature verification
+capiscio validate ./agent-card.json --verbose # Detailed output
+capiscio validate ./agent-card.json --registry-ready # Check registry readiness
+capiscio validate https://agent.com --errors-only    # Show only problems
+```
+
+### Key Options
+
+| Option | Description |
+|--------|-------------|
+| --strict | Strict A2A protocol compliance |
+| --json | JSON output for CI/CD |
+| --verbose | Detailed validation steps |
+| --timeout <ms> | Request timeout (default: 10000) |
+| --schema-only | Skip live endpoint testing |
+| --skip-signature | Skip JWS signature verification |
+| --registry-ready | Registry deployment validation |
+
+## Signature Verification (New in v1.2.0)
+
+**Secure by default** JWS signature verification for agent cards:
+
+### 🔐 Cryptographic Validation
+- **RFC 7515 compliant** JWS (JSON Web Signature) verification
+- **JWKS (JSON Web Key Set)** fetching from trusted sources
+- **Detached signature** support for agent card authentication
+- **HTTPS-only** JWKS endpoints for security
+
+### 🛡️ Security Benefits
+- **Authenticity** - Verify agent cards haven't been tampered with
+- **Trust** - Cryptographically confirm the publisher's identity  
+- **Security** - Prevent malicious agent card injection
+- **Compliance** - Meet security requirements for production deployments
+
+## Why Use Capiscio CLI?
+
+**Catch Integration Issues Before Production:**
+- ❌ Schema validators miss broken JSONRPC endpoints  
+- ❌ Manual testing doesn't cover all transport protocols
+- ❌ Integration failures happen at runtime
+- ❌ Unsigned agent cards can't be trusted
+- ✅ **Capiscio tests actual connectivity and protocol compliance**
+- ✅ **Capiscio verifies cryptographic signatures for authenticity**
+
+**Real Problems This Solves:**
+- JSONRPC methods return wrong error codes
+- GRPC services are unreachable or misconfigured  
+- REST endpoints don't match declared capabilities
+- Agent cards validate but agents don't work
+- Unsigned or tampered agent cards pose security risks
+
+## Transport Protocol Testing
+
+Unlike basic schema validators, Capiscio CLI actually tests your agent endpoints:
+
+- **JSONRPC** - Validates JSON-RPC 2.0 compliance and connectivity
+- **GRPC** - Tests gRPC endpoint accessibility
+- **REST** - Verifies HTTP+JSON endpoint patterns
+- **Consistency** - Ensures equivalent functionality across protocols
+
+Perfect for testing your own agents and evaluating third-party agents before integration.
+
+## CI/CD Integration
+
+### GitHub Actions Example:
+```yaml
+- name: Install and Validate Agent
+  run: |
+    pip install capiscio
+    capiscio validate ./agent-card.json --json --strict
+```
+
+### Docker Example:
+```dockerfile
+RUN pip install capiscio
+COPY agent-card.json .
+RUN capiscio validate ./agent-card.json --strict
+```
+
+Exit codes: 0 = success, 1 = validation failed
 
 ## Platform Support
 
+This package contains pre-built binaries for multiple platforms:
+
 - **Linux**: x86_64, ARM64
-- **macOS**: Intel (x64), Apple Silicon (ARM64)
+- **macOS**: Intel (x64), Apple Silicon (ARM64) 
 - **Windows**: x64, ARM64
-- **Python**: 3.7+ (no Python dependencies required for CLI functionality)
+- **Python**: 3.7+ (no runtime dependencies required)
+
+The Python wrapper automatically detects your platform and runs the appropriate native binary.
+
+## FAQ
+
+**Q: What is the A2A Protocol?**  
+A: The Agent-to-Agent (A2A) protocol v0.3.0 is a standardized specification for AI agent discovery, communication, and interoperability.
+
+**Q: How is this different from schema validators?**  
+A: We actually test live JSONRPC, GRPC, and REST endpoints with transport protocol validation, not just JSON schema structure. We also verify JWS signatures for cryptographic authenticity.
+
+**Q: Do I need Node.js installed?**  
+A: No! This Python package contains pre-built native binaries that work without any Node.js dependency.
+
+**Q: Can I validate LLM agent cards?**  
+A: Yes! Perfect for AI/LLM developers validating agent configurations and testing third-party agents before integration.
 
 ## Development
 
-This is a wrapper package around the Node.js-based Capiscio CLI. The actual CLI logic is implemented in Node.js and compiled to standalone binaries for distribution.
+This package contains pre-built native binaries compiled for maximum performance and zero dependencies. The CLI provides the same functionality across all platforms without requiring any additional runtime installations.
 
-For the underlying CLI source code, see: https://github.com/capiscio/capiscio-cli
+**Source code:** https://github.com/capiscio/capiscio-cli
 
 ## License
 
-MIT License - see the main repository for details.
+MIT License - see the [main repository](https://github.com/capiscio/capiscio-cli/blob/main/LICENSE) for details.
+
+---
+
+**Need help?** [Open an issue](https://github.com/capiscio/capiscio-cli/issues) or check our [documentation](https://github.com/capiscio/capiscio-cli/tree/main/docs)
+
+**Keywords**: A2A protocol, AI agent validation, agent-card.json validator, Python CLI, agent-to-agent protocol, LLM agent cards, AI agent discovery, transport protocol testing, JSONRPC validation, GRPC testing, JWS signature verification
