@@ -16,6 +16,7 @@ export class ValidateCommand {
       .option('--strict', 'Enable strict validation mode')
       .option('--progressive', 'Enable progressive validation mode (default)')
       .option('--conservative', 'Enable conservative validation mode')
+      .option('--skip-signature', 'Skip JWS signature verification (not recommended)')
       .option('--registry-ready', 'Check registry deployment readiness')
       .option('--schema-only', 'Validate schema only, skip endpoint testing')
       .option('--json', 'Output results in JSON format')
@@ -37,7 +38,7 @@ export class ValidateCommand {
       
       if (!resolved) {
         spinner.fail('No agent card found');
-        console.error(chalk.red('❌ No agent card found. Use "capiscio init" to create one.'));
+        console.error(chalk.red('❌ No agent card found. Please provide a file path or URL to an agent card.'));
         process.exit(1);
       }
 
@@ -63,6 +64,7 @@ export class ValidateCommand {
         timeout: parseInt(options.timeout || '10000'),
         skipDynamic: options.schemaOnly || resolved.type === 'file',
         verbose: options.verbose || false,
+        ...(options.skipSignature !== undefined && { skipSignatureVerification: options.skipSignature }),
         ...(options.registryReady !== undefined && { registryReady: options.registryReady }),
         ...(options.showVersion !== undefined && { showVersionCompat: options.showVersion })
       };

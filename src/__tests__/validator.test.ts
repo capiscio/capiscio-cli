@@ -61,7 +61,7 @@ describe('A2AValidator - Comprehensive Tests', () => {
 
   describe('Schema Validation', () => {
     it('should validate a complete valid agent card', async () => {
-      const result = await validator.validate(validAgentCard, { skipDynamic: true });
+      const result = await validator.validate(validAgentCard, { skipDynamic: true, skipSignatureVerification: true });
 
       expect(result.success).toBe(true);
       expect(result.errors).toHaveLength(0);
@@ -403,7 +403,7 @@ describe('A2AValidator - Comprehensive Tests', () => {
     });
 
     it('should return perfect score for valid agent card', async () => {
-      const result = await validator.validate(validAgentCard, { skipDynamic: true });
+      const result = await validator.validate(validAgentCard, { skipDynamic: true, skipSignatureVerification: true });
 
       expect(result.score).toBe(100);
     });
