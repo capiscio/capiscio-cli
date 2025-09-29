@@ -111,6 +111,7 @@ jobs:
         with:
           files: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
           tag_name: ${{ github.ref_name }}
+          draft: true
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
