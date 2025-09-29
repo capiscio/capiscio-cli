@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag to build binaries for (e.g., v1.1.0)'
+        description: 'Release tag to build binaries for (e.g., v1.2.0)'
         required: true
-        default: 'v1.1.0'
+        default: 'v1.2.0'
 
 # Explicit permissions for security
 permissions:
@@ -97,6 +97,22 @@ jobs:
         run: |
           dist\binaries\${{ matrix.binary_name }} --version
 
+      - name: Create tarball for Linux binary
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cd dist/binaries
+          tar -czf capiscio-linux-x64.tar.gz capiscio-linux-x64
+          # Remove the original binary since we now have the tarball
+          rm capiscio-linux-x64
+
+      - name: Create tarball for macOS binary
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd dist/binaries
+          tar -czf ${{ matrix.binary_name }}.tar.gz ${{ matrix.binary_name }}
+          # Remove the original binary since we now have the tarball
+          rm ${{ matrix.binary_name }}
+
       - name: Upload binary to release (on release)
         if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
@@ -104,16 +120,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/binaries/${{ matrix.binary_name }}
-          asset_name: ${{ matrix.binary_name }}
-          asset_content_type: application/octet-stream
+          asset_path: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
+          asset_name: ${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
+          asset_content_type: ${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && 'application/gzip' || 'application/octet-stream' }}
 
       - name: Upload binary artifact (on manual trigger)
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.binary_name }}
-          path: dist/binaries/${{ matrix.binary_name }}
+          name: ${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
+          path: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
           retention-days: 7
 
   # Job to create checksums and summary
@@ -127,12 +143,17 @@ jobs:
       - name: Download Linux binary
         uses: actions/download-artifact@v4
         with:
-          name: capiscio-linux-x64
+          name: capiscio-linux-x64.tar.gz
           
-      - name: Download macOS binary  
+      - name: Download macOS Intel binary  
         uses: actions/download-artifact@v4
         with:
-          name: capiscio-darwin-x64
+          name: capiscio-darwin-x64.tar.gz
+          
+      - name: Download macOS Apple Silicon binary  
+        uses: actions/download-artifact@v4
+        with:
+          name: capiscio-darwin-arm64.tar.gz
           
       - name: Download Windows binary
         uses: actions/download-artifact@v4
