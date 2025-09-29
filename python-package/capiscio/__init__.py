@@ -5,6 +5,6 @@ This package provides a Python wrapper around the Capiscio CLI tool,
 allowing easy installation and usage via pip.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.2.3"
 __author__ = "Capiscio Team"
 __email__ = "hello@capiscio.com"
