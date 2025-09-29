@@ -228,10 +228,128 @@ export class A2AValidator {
       });
     }
 
-    // 3. Additional validations based on detected issues
+    // 3. Signature Verification (enabled by default, can be skipped)
+    if (!options.skipSignatureVerification && card.signatures && card.signatures.length > 0) {
+      const { verifyAgentCardSignatures } = await import('../signature-verification');
+      const signatureTimer = this.logger.timer();
+      this.logger.step('Verifying JWS signatures');
+      
+      try {
+        const signatureResult = await verifyAgentCardSignatures(card, { timeout: 10000 });
+        const signatureDuration = signatureTimer();
+        this.logger.timing('Signature verification', signatureDuration);
+        
+        const verifiedCount = signatureResult.summary.valid;
+        const failedCount = signatureResult.summary.failed;
+        const totalCount = signatureResult.summary.total;
+        
+        validations.push({
+          id: 'signature_verification',
+          name: 'JWS Signature Verification',
+          status: failedCount === 0 ? 'passed' : 'failed',
+          message: `${verifiedCount} of ${totalCount} signatures verified successfully`,
+          duration: signatureDuration,
+          details: `Verified ${verifiedCount} valid signatures, ${failedCount} failed signatures`
+        });
+
+        // Add errors for failed signatures
+        signatureResult.signatures.forEach((result, index) => {
+          if (!result.valid) {
+            errors.push({
+              code: 'SIGNATURE_VERIFICATION_FAILED',
+              message: `Signature ${index + 1} verification failed: ${result.error || 'Unknown error'}`,
+              field: `signatures[${index}]`,
+              severity: 'error'
+            });
+          }
+        });
+
+        // Add warnings for signature issues
+        if (verifiedCount > 0 && failedCount > 0) {
+          warnings.push({
+            code: 'PARTIAL_SIGNATURE_VERIFICATION',
+            message: `Only ${verifiedCount} of ${totalCount} signatures could be verified`,
+            field: 'signatures',
+            severity: 'warning',
+            fixable: true
+          });
+        }
+
+        // Add summary errors if any exist
+        if (signatureResult.summary.errors.length > 0) {
+          signatureResult.summary.errors.forEach(error => {
+            warnings.push({
+              code: 'SIGNATURE_VERIFICATION_WARNING',
+              message: error,
+              field: 'signatures',
+              severity: 'warning',
+              fixable: true
+            });
+          });
+        }
+        
+      } catch (error) {
+        const signatureDuration = signatureTimer();
+        this.logger.timing('Signature verification (failed)', signatureDuration);
+        
+        validations.push({
+          id: 'signature_verification',
+          name: 'JWS Signature Verification',
+          status: 'failed',
+          message: 'Signature verification failed due to system error',
+          duration: signatureDuration,
+          details: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        });
+
+        errors.push({
+          code: 'SIGNATURE_VERIFICATION_ERROR',
+          message: `Signature verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          field: 'signatures',
+          severity: 'error'
+        });
+      }
+    } else if (!options.skipSignatureVerification && (!card.signatures || card.signatures.length === 0)) {
+      // Signature verification is enabled by default but no signatures present
+      validations.push({
+        id: 'signature_verification',
+        name: 'JWS Signature Verification',
+        status: 'skipped',
+        message: 'No signatures found to verify',
+        duration: 0,
+        details: 'Agent card does not contain any signatures'
+      });
+
+      warnings.push({
+        code: 'NO_SIGNATURES_FOUND',
+        message: 'No signatures are present in the agent card. Consider adding signatures to improve trust.',
+        field: 'signatures',
+        severity: 'warning',
+        fixable: true
+      });
+    } else if (options.skipSignatureVerification && card.signatures && card.signatures.length > 0) {
+      // Signature verification was explicitly skipped but signatures are present
+      validations.push({
+        id: 'signature_verification',
+        name: 'JWS Signature Verification',
+        status: 'skipped',
+        message: 'Signature verification was explicitly skipped',
+        duration: 0,
+        details: 'Agent card contains signatures but verification was skipped by user request'
+      });
+
+      warnings.push({
+        code: 'SIGNATURE_VERIFICATION_SKIPPED',
+        message: 'Signature verification was skipped despite signatures being present. This reduces trust verification.',
+        field: 'signatures',
+        severity: 'warning',
+        fixable: true
+      });
+    }
+
+    // 4. Additional validations based on detected issues
     this.addAdditionalWarnings(card, warnings);
 
-    // 4. Strictness-specific validations
+    // 5. Strictness-specific validations
     this.applyStrictnessValidations(card, options, errors, warnings);
 
     // Calculate score

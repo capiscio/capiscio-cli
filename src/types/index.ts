@@ -83,6 +83,7 @@ export interface ValidationOptions {
   suggestions?: boolean;
   showVersionCompat?: boolean;
   verbose?: boolean;
+  skipSignatureVerification?: boolean;
 }
 
 export interface VersionCompatibility {
@@ -199,6 +200,7 @@ export interface CLIOptions {
   conservative?: boolean;
   registryReady?: boolean;
   schemaOnly?: boolean;
+  skipSignature?: boolean;
   json?: boolean;
   junit?: boolean;
   sarif?: boolean;
