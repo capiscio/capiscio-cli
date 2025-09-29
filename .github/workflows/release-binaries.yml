@@ -2,13 +2,13 @@ name: Build and Release Binaries
 
 on:
   release:
-    types: [published]
+    types: [created]  # Triggers when release is created (still allows asset uploads)
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag to build binaries for (e.g., v1.2.0)'
+        description: 'Release tag to build binaries for (e.g., v1.2.1)'
         required: true
-        default: 'v1.2.0'
+        default: 'v1.2.1'
 
 # Explicit permissions for security
 permissions:
