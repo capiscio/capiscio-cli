@@ -144,7 +144,7 @@ This package contains pre-built binaries for multiple platforms:
 
 - **Linux**: x86_64, ARM64
 - **macOS**: Intel (x64), Apple Silicon (ARM64) 
-- **Windows**: x64, ARM64
+- **Windows**: x64 (ARM64 available via [direct download](https://capisc.io/downloads))
 - **Python**: 3.7+ (no runtime dependencies required)
 
 The Python wrapper automatically detects your platform and runs the appropriate native binary.

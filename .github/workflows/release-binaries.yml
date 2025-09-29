@@ -2,13 +2,13 @@ name: Build and Release Binaries
 
 on:
   release:
-    types: [created]  # Triggers when release is created (still allows asset uploads)
+    types: [created, published]  # Handle both draft creation and publishing
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag to build binaries for (e.g., v1.2.1)'
+        description: 'Release tag to build binaries for (e.g., v1.2.2)'
         required: true
-        default: 'v1.2.1'
+        default: 'v1.2.2'
 
 # Explicit permissions for security
 permissions:
@@ -115,14 +115,13 @@ jobs:
 
       - name: Upload binary to release (on release)
         if: github.event_name == 'release'
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
+          tag_name: ${{ github.event.release.tag_name }}
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
-          asset_name: ${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
-          asset_content_type: ${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && 'application/gzip' || 'application/octet-stream' }}
 
       - name: Upload binary artifact (on manual trigger)
         if: github.event_name == 'workflow_dispatch'
