@@ -4,6 +4,11 @@
 
 [![npm version](https://badge.fury.io/js/capiscio-cli.svg)](https://badge.fury.io/js/capiscio-cli)
 [![Downloads](https://img.shields.io/npm/dm/capiscio-cli)](https://www.npmjs.com/package/capiscio-cli)
+[![CI](https://github.com/capiscio/capiscio-cli/workflows/CI/badge.svg)](https://github.com/capiscio/capiscio-cli/actions)
+[![Coverage](https://img.shields.io/badge/coverage-70.2%25-green.svg)](https://github.com/capiscio/capiscio-cli)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](https://github.com/capiscio/capiscio-cli/security)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Quick Start
@@ -75,11 +80,13 @@ Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest
 ## Key Features
 
 - **🚀 Transport Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints
-- **� Cross-Platform Binaries** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
-- **�🔍 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
+- **🔐 JWS Signature Verification** - Cryptographic validation of agent cards (RFC 7515 compliant)
+- **💻 Cross-Platform Binaries** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
+- **🔍 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
 - **⚡ Three Validation Modes** - Progressive, strict, and conservative
 - **🔧 CI/CD Ready** - JSON output with proper exit codes
 - **🌐 Live Endpoint Testing** - Validates real connectivity, not just schemas
+- **🛡️ Secure by Default** - Signature verification enabled automatically
 - **⚡ No Dependencies** - Standalone binaries require no Node.js installation
 
 ## Usage
@@ -91,8 +98,9 @@ capiscio validate [input] [options]
 
 # Examples
 capiscio validate                              # Auto-detect in current directory
-capiscio validate ./agent-card.json           # Validate local file
-capiscio validate https://agent.com           # Test live agent
+capiscio validate ./agent-card.json           # Validate local file (with signatures)
+capiscio validate https://agent.com           # Test live agent (with signatures)
+capiscio validate ./agent-card.json --skip-signature # Skip signature verification
 capiscio validate ./agent-card.json --verbose # Detailed output
 capiscio validate ./agent-card.json --registry-ready # Check registry readiness
 capiscio validate https://agent.com --errors-only    # Show only problems
@@ -108,6 +116,7 @@ capiscio validate ./agent-card.json --show-version   # Version analysis
 | --verbose | Detailed validation steps |
 | --timeout <ms> | Request timeout (default: 10000) |
 | --schema-only | Skip live endpoint testing |
+| --skip-signature | Skip JWS signature verification |
 
 ### Validation Modes
 
@@ -123,24 +132,55 @@ capiscio validate ./agent-card.json --show-version   # Version analysis
 - ❌ Schema validators miss broken JSONRPC endpoints  
 - ❌ Manual testing doesn't cover all transport protocols
 - ❌ Integration failures happen at runtime
+- ❌ Unsigned agent cards can't be trusted
 - ✅ **Capiscio tests actual connectivity and protocol compliance**
+- ✅ **Capiscio verifies cryptographic signatures for authenticity**
 
 **Real Problems This Solves:**
 - JSONRPC methods return wrong error codes
 - GRPC services are unreachable or misconfigured  
 - REST endpoints don't match declared capabilities
 - Agent cards validate but agents don't work
+- Unsigned or tampered agent cards pose security risks
 
-## Transport Protocol Testing
+## Transport Protocol Testing & Security
 
-Unlike basic schema validators, Capiscio CLI actually tests your agent endpoints:
+Unlike basic schema validators, Capiscio CLI actually tests your agent endpoints and verifies cryptographic signatures:
 
 - **JSONRPC** - Validates JSON-RPC 2.0 compliance and connectivity
 - **GRPC** - Tests gRPC endpoint accessibility
 - **REST** - Verifies HTTP+JSON endpoint patterns
+- **JWS Signatures** - Cryptographic verification of agent card authenticity (RFC 7515)
 - **Consistency** - Ensures equivalent functionality across protocols
 
 Perfect for testing your own agents and evaluating third-party agents before integration.
+
+## Signature Verification (New in v1.2.0)
+
+Capiscio CLI now includes **secure by default** JWS signature verification for agent cards:
+
+### 🔐 Cryptographic Validation
+- **RFC 7515 compliant** JWS (JSON Web Signature) verification
+- **JWKS (JSON Web Key Set)** fetching from trusted sources
+- **Detached signature** support for agent card authentication
+- **HTTPS-only** JWKS endpoints for security
+
+### 🛡️ Secure by Default
+```bash
+# Signature verification runs automatically
+capiscio validate ./agent-card.json
+
+# Opt-out when signatures aren't needed
+capiscio validate ./agent-card.json --skip-signature
+```
+
+### ✅ Benefits
+- **Authenticity** - Verify agent cards haven't been tampered with
+- **Trust** - Cryptographically confirm the publisher's identity  
+- **Security** - Prevent malicious agent card injection
+- **Compliance** - Meet security requirements for production deployments
+
+Signature verification adds minimal overhead while providing crucial security guarantees for agent ecosystems.
 
 ## CI/CD Integration
 
@@ -171,7 +211,7 @@ Exit codes: 0 = success, 1 = validation failed
 A: The Agent-to-Agent (A2A) protocol v0.3.0 is a standardized specification for AI agent discovery, communication, and interoperability.
 
 **Q: How is this different from schema validators?**  
-A: We actually test live JSONRPC, GRPC, and REST endpoints with transport protocol validation, not just JSON schema structure.
+A: We actually test live JSONRPC, GRPC, and REST endpoints with transport protocol validation, not just JSON schema structure. We also verify JWS signatures for cryptographic authenticity.
 
 **Q: Can I validate LLM agent cards?**  
 A: Yes! Perfect for AI/LLM developers validating agent configurations and testing third-party agents before integration.
@@ -187,4 +227,4 @@ MIT © [Capiscio](https://github.com/capiscio)
 
 **Need help?** [Open an issue](https://github.com/capiscio/capiscio-cli/issues) or check our [documentation](docs/)
 
-**Keywords**: A2A protocol, AI agent validation, agent-card.json validator, agent.json validator, agent-to-agent protocol, LLM agent cards, AI agent discovery, agent configuration validation, transport protocol testing, JSONRPC validation, GRPC testing, REST endpoint validation, agent protocol CLI, AI agent compliance
+**Keywords**: A2A protocol, AI agent validation, agent-card.json validator, agent.json validator, agent-to-agent protocol, LLM agent cards, AI agent discovery, agent configuration validation, transport protocol testing, JSONRPC validation, GRPC testing, REST endpoint validation, agent protocol CLI, AI agent compliance, JWS signature verification, agent card authentication
