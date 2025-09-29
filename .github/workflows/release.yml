@@ -11,30 +11,8 @@ on:
         type: string
 
 jobs:
-  # Wait for binary workflow to complete successfully
-  wait-for-binaries:
-    name: Wait for Binary Build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
-    steps:
-      - name: Wait for binary workflow
-        uses: fountainhead/action-wait-for-check@v1.2.0
-        id: wait-for-binaries
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: "Build linux Binary"  # This will check if binary workflow completed
-          ref: ${{ github.event.release.tag_name }}
-          timeoutSeconds: 1800  # 30 minutes max wait
-
-      - name: Check binary workflow result
-        if: steps.wait-for-binaries.outputs.conclusion != 'success'
-        run: |
-          echo "❌ Binary workflow failed or timed out. Cannot publish to npm."
-          exit 1
-
   publish:
     name: Publish to NPM
-    needs: wait-for-binaries
     runs-on: ubuntu-latest
     permissions:
       contents: read

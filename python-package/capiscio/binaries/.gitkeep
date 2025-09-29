@@ -1,0 +1,3 @@
+# This directory is used by the Python package build workflow
+# Binaries are downloaded here during CI builds but not committed to git
+# See .github/workflows/publish-python.yml for the build process

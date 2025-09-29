@@ -2,13 +2,13 @@ name: Build and Release Binaries
 
 on:
   release:
-    types: [created, published]  # Handle both draft creation and publishing
+    types: [created]  # Only trigger on draft creation - uploads assets before release becomes immutable
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag to build binaries for (e.g., v1.2.2)'
+        description: 'Release tag to build binaries for (e.g., v1.2.1)'
         required: true
-        default: 'v1.2.2'
+        default: 'v1.2.1'
 
 # Explicit permissions for security
 permissions:
@@ -113,7 +113,7 @@ jobs:
           # Remove the original binary since we now have the tarball
           rm ${{ matrix.binary_name }}
 
-      - name: Upload binary to release (on release)
+      - name: Upload binary to draft release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
@@ -131,53 +131,25 @@ jobs:
           path: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
           retention-days: 7
 
-  # Job to create checksums and summary
-  create-checksums:
-    name: Create Checksums
+  # Summary job
+  summary:
+    name: Build Summary
     needs: build-binaries
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: always()
     
     steps:
-      - name: Download Linux binary
-        uses: actions/download-artifact@v4
-        with:
-          name: capiscio-linux-x64.tar.gz
-          
-      - name: Download macOS Intel binary  
-        uses: actions/download-artifact@v4
-        with:
-          name: capiscio-darwin-x64.tar.gz
-          
-      - name: Download macOS Apple Silicon binary  
-        uses: actions/download-artifact@v4
-        with:
-          name: capiscio-darwin-arm64.tar.gz
-          
-      - name: Download Windows binary
-        uses: actions/download-artifact@v4
-        with:
-          name: capiscio-win-x64.exe
-
-      - name: Create checksums
+      - name: Create summary
         run: |
-          echo "# Binary Checksums" > checksums.md
-          echo "" >> checksums.md
-          echo "SHA256 checksums for release ${{ github.event.release.tag_name }}:" >> checksums.md
-          echo "" >> checksums.md
-          echo '```' >> checksums.md
-          sha256sum capiscio-* >> checksums.md
-          echo '```' >> checksums.md
+          echo "# Binary Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Also create a checksums.txt file
-          sha256sum capiscio-* > checksums.txt
-
-      - name: Upload checksums to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: checksums.txt
-          asset_name: checksums.txt
-          asset_content_type: text/plain
+          if [[ "${{ needs.build-binaries.result }}" == "success" ]]; then
+            echo "✅ **All binaries built and uploaded successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
+            echo "1. Review the draft release at: https://github.com/capiscio/capiscio-cli/releases" >> $GITHUB_STEP_SUMMARY
+            echo "2. Publish the release to trigger npm and PyPI workflows" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Binary build failed**" >> $GITHUB_STEP_SUMMARY
+          fi

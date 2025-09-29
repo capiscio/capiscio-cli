@@ -125,5 +125,6 @@ python-package/build/
 python-package/*.egg-info/
 python-package/__pycache__/
 python-package/.pytest_cache/
+python-package/capiscio/binaries/  # Generated binaries - built in CI, not committed
 *.py[cod]
 *$py.class
