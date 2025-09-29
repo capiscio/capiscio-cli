@@ -118,3 +118,12 @@ Desktop.ini
 
 # Linux
 *~
+
+# Python package artifacts
+python-package/dist/
+python-package/build/
+python-package/*.egg-info/
+python-package/__pycache__/
+python-package/.pytest_cache/
+*.py[cod]
+*$py.class
