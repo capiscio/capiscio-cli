@@ -2,13 +2,9 @@ name: Build and Publish Python Package
 
 on:
   release:
-    types: [published]  # Trigger after npm workflow completes
+    types: [published]
   workflow_dispatch:
     inputs:
-      release_tag:
-        description: 'Release tag to publish to PyPI (e.g., v1.2.1)'
-        required: true
-        type: string
       dry_run:
         description: 'Run in dry-run mode (build only, no publish)'
         required: false
@@ -21,26 +17,6 @@ permissions:
   id-token: write  # For PyPI trusted publishing
 
 jobs:
-  # Wait for npm workflow to complete successfully  
-  wait-for-npm:
-    name: Wait for NPM Publish
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
-    steps:
-      - name: Wait for npm workflow
-        uses: fountainhead/action-wait-for-check@v1.2.0
-        id: wait-for-npm
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: "Publish to NPM"  # Wait for npm workflow
-          ref: ${{ github.event.release.tag_name }}
-          timeoutSeconds: 900  # 15 minutes max wait
-
-      - name: Check npm workflow result  
-        if: steps.wait-for-npm.outputs.conclusion != 'success'
-        run: |
-          echo "❌ NPM workflow failed or timed out. Cannot publish to PyPI."
-          exit 1
   # First, we need to build all the binaries that will be included in the Python package
   build-binaries:
     name: Build ${{ matrix.platform }} Binary
@@ -125,7 +101,7 @@ jobs:
   # Build and publish the Python package
   build-python:
     name: Build Python Package
-    needs: [build-binaries, wait-for-npm]
+    needs: build-binaries
     runs-on: ubuntu-latest
     
     steps:
@@ -238,7 +214,7 @@ jobs:
     name: Publish to PyPI
     needs: build-python
     runs-on: ubuntu-latest
-    # Only run when not in dry-run mode  
+    # Only run on actual releases, not manual dispatches with dry_run
     if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)
     
     steps:
