@@ -55,7 +55,8 @@ capiscio validate ./agent-card.json --strict --json
 | **macOS** | Intel | [`capiscio-darwin-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz) | ~48MB |
 | **macOS** | Apple Silicon | [`capiscio-darwin-arm64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz) | ~44MB |
 | **Windows** | Intel x64 | [`capiscio-win-x64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe) | ~45MB |
-| **Windows** | ARM64 | [`capiscio-win-arm64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe) | ~42MB |
+
+> **Note:** Windows ARM64 users should install via npm (`npm install -g capiscio-cli`) or pip (`pip install capiscio`) instead.
 
 #### Quick Download Commands:
 ```bash
@@ -76,9 +77,6 @@ chmod +x capiscio-darwin-arm64
 
 # Windows Intel (PowerShell)
 Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe" -OutFile "capiscio.exe"
-
-# Windows ARM64 (PowerShell)  
-Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-arm64.exe" -OutFile "capiscio.exe"
 
 # Use the binary
 ./capiscio-linux-x64 validate ./agent-card.json
