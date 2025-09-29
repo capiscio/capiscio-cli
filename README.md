@@ -2,6 +2,8 @@
 
 > **Validator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
 
+🌐 **[Learn more about Capiscio](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
+
 [![npm version](https://badge.fury.io/js/capiscio-cli.svg)](https://badge.fury.io/js/capiscio-cli)
 [![Downloads](https://img.shields.io/npm/dm/capiscio-cli)](https://www.npmjs.com/package/capiscio-cli)
 [![CI](https://github.com/capiscio/capiscio-cli/workflows/CI/badge.svg)](https://github.com/capiscio/capiscio-cli/actions)
@@ -12,6 +14,8 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Quick Start
+
+**💡 Prefer a web interface?** Try our [online validator at capisc.io](https://capisc.io/validator) - no installation required!
 
 ### Option 1: Install via NPM (Requires Node.js)
 ```bash
@@ -208,7 +212,7 @@ Exit codes: 0 = success, 1 = validation failed
 ## FAQ
 
 **Q: What is the A2A Protocol?**  
-A: The Agent-to-Agent (A2A) protocol v0.3.0 is a standardized specification for AI agent discovery, communication, and interoperability.
+A: The Agent-to-Agent (A2A) protocol v0.3.0 is a standardized specification for AI agent discovery, communication, and interoperability. [Learn more at capisc.io](https://capisc.io).
 
 **Q: How is this different from schema validators?**  
 A: We actually test live JSONRPC, GRPC, and REST endpoints with transport protocol validation, not just JSON schema structure. We also verify JWS signatures for cryptographic authenticity.
@@ -221,10 +225,10 @@ A: Current spec uses `agent-card.json`. We also support legacy `agent.json` file
 
 ## License
 
-MIT © [Capiscio](https://github.com/capiscio)
+MIT © [Capiscio](https://capisc.io)
 
 ---
 
-**Need help?** [Open an issue](https://github.com/capiscio/capiscio-cli/issues) or check our [documentation](docs/)
+**Need help?** [Visit capisc.io](https://capisc.io) | [Open an issue](https://github.com/capiscio/capiscio-cli/issues) | [Documentation](https://capisc.io/cli) | [Web Validator](https://capisc.io/validator)
 
 **Keywords**: A2A protocol, AI agent validation, agent-card.json validator, agent.json validator, agent-to-agent protocol, LLM agent cards, AI agent discovery, agent configuration validation, transport protocol testing, JSONRPC validation, GRPC testing, REST endpoint validation, agent protocol CLI, AI agent compliance, JWS signature verification, agent card authentication
