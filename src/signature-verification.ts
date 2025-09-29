@@ -3,8 +3,16 @@
  * Implements A2A Protocol §5.5.6 - AgentCardSignature verification
  */
 
-import { jwtVerify, createRemoteJWKSet } from 'jose';
 import type { AgentCard, AgentCardSignature } from './types';
+
+// Dynamic import for ESM-only jose library
+let joseModule: any = null;
+async function getJose() {
+  if (!joseModule) {
+    joseModule = await import('jose');
+  }
+  return joseModule;
+}
 
 /**
  * Result of signature verification
@@ -246,6 +254,9 @@ async function verifyDetachedJWS(
   timeout = 10000
 ): Promise<boolean> {
   try {
+    // Get jose functions dynamically
+    const { jwtVerify, createRemoteJWKSet } = await getJose();
+    
     // Create canonical Agent Card payload (exclude signatures)
     const { signatures, ...agentCardWithoutSignatures } = agentCard;
     const canonicalPayload = createCanonicalJSON(agentCardWithoutSignatures);

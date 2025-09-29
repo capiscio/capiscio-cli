@@ -12,7 +12,7 @@ export default defineConfig([
     minify: false,
     splitting: false,
     treeshake: true,
-    external: ['commander', 'chalk', 'ora', 'inquirer', 'glob'],
+    external: ['commander', 'chalk', 'ora', 'inquirer', 'glob', 'jose'],
     esbuildOptions(options) {
       options.banner = {
         js: '#!/usr/bin/env node'
@@ -30,6 +30,6 @@ export default defineConfig([
     minify: false,
     splitting: false,
     treeshake: true,
-    external: ['commander', 'chalk', 'ora', 'inquirer', 'glob']
+    external: ['commander', 'chalk', 'ora', 'inquirer', 'glob', 'jose']
   }
 ]);
