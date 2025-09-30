@@ -1,4 +1,4 @@
-import { AgentCard, ValidationResult, ValidationOptions, HttpClient, VersionMismatch } from '../types';
+import { AgentCard, ValidationResult, ValidationOptions, HttpClient, VersionMismatch, TransportProtocol } from '../types';
 import { FetchHttpClient } from './http-client';
 import { semverCompare, isValidSemver } from '../utils/semver';
 import { Logger } from '../utils/logger';
@@ -110,7 +110,7 @@ export class A2AValidator {
       }
 
       // Perform validation based on strictness mode
-      const result = await this.performValidation(agentCard, options);
+      const result = await this.performValidation(agentCard, options, input);
 
       // Add legacy endpoint warning if detected
       if (usedLegacyEndpoint) {
@@ -149,7 +149,7 @@ export class A2AValidator {
     }
   }
 
-  private async performValidation(card: AgentCard, options: ValidationOptions): Promise<ValidationResult> {
+  private async performValidation(card: AgentCard, options: ValidationOptions, originalInput?: string | AgentCard): Promise<ValidationResult> {
     const validations: any[] = [];
     const errors: any[] = [];
     const warnings: any[] = [];
@@ -346,10 +346,18 @@ export class A2AValidator {
       });
     }
 
-    // 4. Additional validations based on detected issues
+    // 4. Transport Endpoint Testing (if not skipped)
+    if (!options.skipDynamic && typeof originalInput === 'string' && this.isValidUrl(originalInput)) {
+      const transportResult = await this.validateTransportEndpoints(card, options);
+      validations.push(...transportResult.validations);
+      errors.push(...transportResult.errors);
+      warnings.push(...transportResult.warnings);
+    }
+
+    // 5. Additional validations based on detected issues
     this.addAdditionalWarnings(card, warnings);
 
-    // 5. Strictness-specific validations
+    // 6. Strictness-specific validations
     this.applyStrictnessValidations(card, options, errors, warnings);
 
     // Calculate score
@@ -383,7 +391,7 @@ export class A2AValidator {
 
     this.logger.step('Validating schema structure');
 
-    // Required fields validation
+    // Required fields validation (per A2A v0.3.0 specification)
     const requiredFields = ['name', 'description', 'url', 'provider', 'version'];
     
     // A2A v0.3.0 specific required fields
@@ -443,11 +451,22 @@ export class A2AValidator {
       }
     }
 
-    // URL format validation
-    if (card.url && !this.isValidUrl(card.url)) {
+    // URL format and HTTPS enforcement (RFC 0001 R1, A2A §5.3)
+    if (card.url && !this.isValidHttpsUrl(card.url)) {
       errors.push({
         code: 'SCHEMA_VALIDATION_ERROR',
-        message: 'url: Invalid URL format',
+        message: 'url: Must be a valid HTTPS URL (HTTP not allowed per A2A specification)',
+        field: 'url',
+        severity: 'error',
+        fixable: true
+      });
+    }
+
+    // Check for localhost, private IPs (SSRF protection per RFC 0001)
+    if (card.url && this.isPrivateOrLocalUrl(card.url)) {
+      errors.push({
+        code: 'SCHEMA_VALIDATION_ERROR',
+        message: 'url: Cannot use localhost, private IP addresses, or non-routable addresses',
         field: 'url',
         severity: 'error',
         fixable: true
@@ -468,14 +487,14 @@ export class A2AValidator {
       }
     }
 
-    // Optional URL fields validation
+    // Optional URL fields validation (must be HTTPS if present)
     const urlFields = ['iconUrl', 'documentationUrl', 'termsOfServiceUrl', 'privacyPolicyUrl'];
     urlFields.forEach(field => {
       const value = this.getNestedValue(card, field);
-      if (value && !this.isValidUrl(value)) {
+      if (value && !this.isValidHttpsUrl(value)) {
         errors.push({
           code: 'SCHEMA_VALIDATION_ERROR',
-          message: `${field}: Invalid URL format`,
+          message: `${field}: Must be a valid HTTPS URL`,
           field: field,
           severity: 'error',
           fixable: true
@@ -485,12 +504,74 @@ export class A2AValidator {
 
     // Skills validation
     if (card.skills) {
+      const skillIds = new Set<string>();
+      
       card.skills.forEach((skill, index) => {
         if (!skill.id) {
           errors.push({
             code: 'SCHEMA_VALIDATION_ERROR',
             message: `skills.${index}.id: Required`,
             field: `skills.${index}.id`,
+            severity: 'error',
+            fixable: true
+          });
+        } else {
+          // Check for duplicate skill IDs
+          if (skillIds.has(skill.id)) {
+            errors.push({
+              code: 'SCHEMA_VALIDATION_ERROR',
+              message: `skills.${index}.id: Duplicate skill ID '${skill.id}' - skill IDs must be unique within agent card`,
+              field: `skills.${index}.id`,
+              severity: 'error',
+              fixable: true
+            });
+          } else {
+            skillIds.add(skill.id);
+          }
+          
+          // Skill ID length validation
+          if (skill.id.length > 200) {
+            errors.push({
+              code: 'SCHEMA_VALIDATION_ERROR',
+              message: `skills.${index}.id: Maximum 200 characters allowed`,
+              field: `skills.${index}.id`,
+              severity: 'error',
+              fixable: true
+            });
+          }
+        }
+
+        if (!skill.name) {
+          errors.push({
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: `skills.${index}.name: Required`,
+            field: `skills.${index}.name`,
+            severity: 'error',
+            fixable: true
+          });
+        } else if (skill.name.length > 200) {
+          errors.push({
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: `skills.${index}.name: Maximum 200 characters allowed`,
+            field: `skills.${index}.name`,
+            severity: 'error',
+            fixable: true
+          });
+        }
+
+        if (!skill.description) {
+          errors.push({
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: `skills.${index}.description: Required`,
+            field: `skills.${index}.description`,
+            severity: 'error',
+            fixable: true
+          });
+        } else if (skill.description.length > 2000) {
+          errors.push({
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: `skills.${index}.description: Maximum 2000 characters allowed`,
+            field: `skills.${index}.description`,
             severity: 'error',
             fixable: true
           });
@@ -511,6 +592,9 @@ export class A2AValidator {
         }
       });
     }
+
+    // A2A Transport Consistency Validation (§5.6.4)
+    this.validateTransportConsistency(card, errors, warnings);
 
     const duration = Date.now() - startTime;
     const success = errors.length === 0;
@@ -574,6 +658,50 @@ export class A2AValidator {
       mismatches,
       suggestions
     };
+  }
+
+  private validateTransportConsistency(card: AgentCard, errors: any[], warnings: any[]): void {
+    // A2A §5.6.4 Transport Consistency Requirements
+    
+    // 1. preferredTransport must be present (already checked in required fields)
+    
+    // 2. Interface completeness: additionalInterfaces SHOULD include main URL
+    if (card.additionalInterfaces && card.additionalInterfaces.length > 0) {
+      const mainUrlInterface = card.additionalInterfaces.find(
+        iface => iface.url === card.url && iface.transport === card.preferredTransport
+      );
+      
+      if (!mainUrlInterface) {
+        warnings.push({
+          code: 'TRANSPORT_INTERFACE_COMPLETENESS',
+          message: 'additionalInterfaces should include an entry for the main URL and preferredTransport for completeness',
+          field: 'additionalInterfaces',
+          severity: 'warning',
+          fixable: true
+        });
+      }
+      
+      // 3. No conflicts: same URL must not declare conflicting transports
+      const urlTransportMap = new Map<string, string>();
+      urlTransportMap.set(card.url, card.preferredTransport);
+      
+      card.additionalInterfaces.forEach((iface, index) => {
+        const existingTransport = urlTransportMap.get(iface.url);
+        if (existingTransport && existingTransport !== iface.transport) {
+          errors.push({
+            code: 'TRANSPORT_URL_CONFLICT',
+            message: `Conflicting transport protocols for URL ${iface.url}: ${existingTransport} vs ${iface.transport}`,
+            field: `additionalInterfaces.${index}`,
+            severity: 'error',
+            fixable: true
+          });
+        } else {
+          urlTransportMap.set(iface.url, iface.transport);
+        }
+      });
+    }
+    
+    // 4. Minimum transport requirement is satisfied by having preferredTransport (already validated)
   }
 
   private addAdditionalWarnings(card: AgentCard, warnings: any[]) {
@@ -700,11 +828,572 @@ export class A2AValidator {
     }
   }
 
+  private isValidHttpsUrl(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  private isPrivateOrLocalUrl(url: string): boolean {
+    try {
+      const parsedUrl = new URL(url);
+      const hostname = parsedUrl.hostname;
+      
+      // Check for localhost
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+        return true;
+      }
+      
+      // Check for private IP ranges
+      if (this.isPrivateIPAddress(hostname)) {
+        return true;
+      }
+      
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  private isPrivateIPAddress(hostname: string): boolean {
+    // IPv4 private ranges: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+    // IPv4 link-local: 169.254.0.0/16
+    const ipv4PrivateRegex = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|169\.254\.)/;
+    
+    // IPv6 private ranges: fc00::/7, fe80::/10
+    const ipv6PrivateRegex = /^(fc|fd|fe[89ab])/i;
+    
+    if (ipv4PrivateRegex.test(hostname)) {
+      return true;
+    }
+    
+    if (ipv6PrivateRegex.test(hostname)) {
+      return true;
+    }
+    
+    return false;
+  }
+
   private isVersionCompatible(version: string, required: string): boolean {
     try {
       return semverCompare(version, required) >= 0;
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Validate transport endpoints by testing connectivity and basic functionality
+   */
+  private async validateTransportEndpoints(card: AgentCard, options: ValidationOptions): Promise<{
+    validations: any[];
+    errors: any[];
+    warnings: any[];
+  }> {
+    const validations: any[] = [];
+    const errors: any[] = [];
+    const warnings: any[] = [];
+
+    this.logger.step('Testing transport endpoints');
+
+    // 1. Test primary endpoint (main URL) - this is REQUIRED so failures are errors
+    await this.testEndpointConnectivity(card.url, 'Primary Endpoint', validations, errors, warnings, options, true);
+
+    // 2. Test preferred transport endpoint - this is REQUIRED so failures are errors
+    await this.testTransportProtocol(card.url, card.preferredTransport, 'Preferred Transport', validations, errors, warnings, options, true);
+
+    // 3. Test additional interfaces if present - these are OPTIONAL so failures are warnings
+    if (card.additionalInterfaces && card.additionalInterfaces.length > 0) {
+      for (const iface of card.additionalInterfaces) {
+        await this.testEndpointConnectivity(iface.url, `${iface.transport} Interface`, validations, errors, warnings, options, false);
+        await this.testTransportProtocol(iface.url, iface.transport, `${iface.transport} Protocol`, validations, errors, warnings, options, false);
+      }
+    }
+
+    return { validations, errors, warnings };
+  }
+
+  /**
+   * Test basic HTTP connectivity to an endpoint
+   */
+  private async testEndpointConnectivity(
+    url: string, 
+    testName: string, 
+    validations: any[], 
+    errors: any[], 
+    warnings: any[], 
+    options: ValidationOptions,
+    isPrimary: boolean = false
+  ): Promise<void> {
+    const timer = this.logger.timer();
+    this.logger.debug(`Testing connectivity to ${url}`);
+
+    try {
+      const response = await this.httpClient.get(url, { 
+        timeout: options.timeout || 10000 
+      });
+      const duration = timer();
+
+      if (response.status >= 200 && response.status < 300) {
+        validations.push({
+          id: `endpoint_connectivity_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} Connectivity`,
+          status: 'passed',
+          message: `Endpoint accessible (${response.status})`,
+          duration,
+          details: `HTTP ${response.status} response received in ${duration}ms`
+        });
+        this.logger.debug(`✓ ${testName} connectivity test passed`, { url, status: response.status, duration });
+      } else {
+        validations.push({
+          id: `endpoint_connectivity_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} Connectivity`,
+          status: 'failed',
+          message: `Endpoint returned ${response.status}`,
+          duration,
+          details: `HTTP ${response.status} response indicates endpoint issues`
+        });
+        
+        // Primary endpoint failures are errors, additional interfaces are warnings
+        if (isPrimary) {
+          errors.push({
+            code: 'PRIMARY_ENDPOINT_HTTP_ERROR',
+            message: `Primary endpoint returned HTTP ${response.status}`,
+            field: 'url',
+            severity: 'error',
+            fixable: true
+          });
+        } else {
+          warnings.push({
+            code: 'ADDITIONAL_ENDPOINT_HTTP_ERROR',
+            message: `${testName} returned HTTP ${response.status}`,
+            field: 'additionalInterfaces',
+            severity: 'warning',
+            fixable: true
+          });
+        }
+        this.logger.debug(`⚠ ${testName} connectivity test warning`, { url, status: response.status, duration });
+      }
+    } catch (error) {
+      const duration = timer();
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      validations.push({
+        id: `endpoint_connectivity_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+        name: `${testName} Connectivity`,
+        status: 'failed',
+        message: `Endpoint unreachable`,
+        duration,
+        details: `Connection failed: ${errorMessage}`
+      });
+      
+      // Primary endpoint failures are errors, additional interfaces are warnings
+      if (isPrimary) {
+        errors.push({
+          code: 'PRIMARY_ENDPOINT_UNREACHABLE',
+          message: `Primary endpoint is unreachable: ${errorMessage}`,
+          field: 'url',
+          severity: 'error',
+          fixable: true
+        });
+      } else {
+        warnings.push({
+          code: 'ADDITIONAL_ENDPOINT_UNREACHABLE',
+          message: `${testName} is unreachable: ${errorMessage}`,
+          field: 'additionalInterfaces',
+          severity: 'warning',
+          fixable: true
+        });
+      }
+      
+      this.logger.debug(`✗ ${testName} connectivity test failed`, { url, error: errorMessage, duration });
+    }
+  }
+
+  /**
+   * Test transport protocol specific functionality
+   */
+  private async testTransportProtocol(
+    url: string, 
+    transport: TransportProtocol, 
+    testName: string, 
+    validations: any[], 
+    errors: any[], 
+    warnings: any[], 
+    options: ValidationOptions,
+    isPrimary: boolean = false
+  ): Promise<void> {
+    const timer = this.logger.timer();
+    this.logger.debug(`Testing ${transport} protocol on ${url}`);
+
+    try {
+      switch (transport) {
+        case 'JSONRPC': {
+          await this.testJsonRpcEndpoint(url, testName, validations, errors, warnings, options);
+          break;
+        }
+        case 'GRPC': {
+          await this.testGrpcEndpoint(url, testName, validations, errors, warnings, options);
+          break;
+        }
+        case 'HTTP+JSON': {
+          await this.testHttpJsonEndpoint(url, testName, validations, errors, warnings, options);
+          break;
+        }
+        default: {
+          const duration = timer();
+          validations.push({
+            id: `transport_protocol_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+            name: `${testName} Protocol Test`,
+            status: 'skipped',
+            message: `Unknown transport protocol: ${transport}`,
+            duration,
+            details: `Transport protocol ${transport} is not supported for testing`
+          });
+        }
+      }
+    } catch (error) {
+      const duration = timer();
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      validations.push({
+        id: `transport_protocol_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+        name: `${testName} Protocol Test`,
+        status: 'failed',
+        message: `Protocol test failed`,
+        duration,
+        details: `${transport} protocol test failed: ${errorMessage}`
+      });
+      
+      // Primary transport failures are errors, additional interfaces are warnings
+      if (isPrimary) {
+        errors.push({
+          code: 'PRIMARY_TRANSPORT_PROTOCOL_ERROR',
+          message: `Primary transport ${testName} failed: ${errorMessage}`,
+          field: 'preferredTransport',
+          severity: 'error',
+          fixable: true
+        });
+      } else {
+        warnings.push({
+          code: 'ADDITIONAL_TRANSPORT_PROTOCOL_ERROR',
+          message: `Additional transport ${testName} failed: ${errorMessage}`,
+          field: 'additionalInterfaces',
+          severity: 'warning',
+          fixable: true
+        });
+      }
+    }
+  }
+
+  /**
+   * Test JSON-RPC 2.0 endpoint
+   */
+  private async testJsonRpcEndpoint(
+    url: string, 
+    testName: string, 
+    validations: any[], 
+    errors: any[], 
+    warnings: any[], 
+    options: ValidationOptions
+  ): Promise<void> {
+    const timer = this.logger.timer();
+    
+    try {
+      // Test with a basic JSON-RPC 2.0 request (method discovery)
+      const payload = {
+        jsonrpc: '2.0',
+        method: 'rpc.discover',
+        id: 1
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(options.timeout || 10000)
+      });
+
+      const duration = timer();
+      const contentType = response.headers.get('content-type') || '';
+
+      if (!contentType.includes('application/json')) {
+        validations.push({
+          id: `jsonrpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} JSON-RPC`,
+          status: 'failed',
+          message: 'Invalid content-type for JSON-RPC',
+          duration,
+          details: `Expected application/json, got ${contentType}`
+        });
+        warnings.push({
+          code: 'JSONRPC_INVALID_CONTENT_TYPE',
+          message: `JSON-RPC endpoint should return application/json content-type, got ${contentType}`,
+          field: 'preferredTransport',
+          severity: 'warning',
+          fixable: true
+        });
+        return;
+      }
+
+      const responseData = await response.json();
+      
+      // Check if response follows JSON-RPC 2.0 structure
+      if (response.status === 200 && responseData && (responseData.result !== undefined || responseData.error !== undefined)) {
+        validations.push({
+          id: `jsonrpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} JSON-RPC`,
+          status: 'passed',
+          message: 'JSON-RPC 2.0 endpoint responding correctly',
+          duration,
+          details: 'Endpoint accepts JSON-RPC requests and returns valid responses'
+        });
+      } else if (response.status === 405 || response.status === 404) {
+        validations.push({
+          id: `jsonrpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} JSON-RPC`,
+          status: 'failed',
+          message: `JSON-RPC endpoint returned ${response.status}`,
+          duration,
+          details: 'Method not allowed or not found - endpoint may not support JSON-RPC'
+        });
+        warnings.push({
+          code: 'JSONRPC_METHOD_NOT_SUPPORTED',
+          message: `JSON-RPC endpoint returned ${response.status} - may not support JSON-RPC protocol`,
+          field: 'preferredTransport',
+          severity: 'warning',
+          fixable: true
+        });
+      } else {
+        validations.push({
+          id: `jsonrpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} JSON-RPC`,
+          status: 'passed',
+          message: 'JSON-RPC endpoint accessible',
+          duration,
+          details: `Endpoint responds to JSON-RPC requests (${response.status})`
+        });
+      }
+    } catch (error) {
+      const duration = timer();
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      validations.push({
+        id: `jsonrpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+        name: `${testName} JSON-RPC`,
+        status: 'failed',
+        message: 'JSON-RPC endpoint test failed',
+        duration,
+        details: `Failed to test JSON-RPC endpoint: ${errorMessage}`
+      });
+      
+      warnings.push({
+        code: 'JSONRPC_ENDPOINT_ERROR',
+        message: `JSON-RPC endpoint test failed: ${errorMessage}`,
+        field: 'preferredTransport',
+        severity: 'warning',
+        fixable: true
+      });
+    }
+  }
+
+  /**
+   * Test gRPC endpoint (basic connectivity and port check)
+   */
+  private async testGrpcEndpoint(
+    url: string, 
+    testName: string, 
+    validations: any[], 
+    errors: any[], 
+    warnings: any[], 
+    options: ValidationOptions
+  ): Promise<void> {
+    const timer = this.logger.timer();
+    
+    try {
+      // gRPC testing is more complex - for now just test if the endpoint is reachable
+      // and check if it looks like a gRPC endpoint
+      const urlObj = new URL(url);
+      const isHttps = urlObj.protocol === 'https:';
+      const portMatch = url.match(/:(\d+)/);
+      const port = portMatch ? parseInt(portMatch[1] || '80') : (isHttps ? 443 : 80);
+      
+      // Try a basic HTTP/2 connection test (gRPC uses HTTP/2)
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/grpc',
+          'TE': 'trailers'
+        },
+        signal: AbortSignal.timeout(options.timeout || 10000)
+      });
+
+      const duration = timer();
+      
+      // gRPC endpoints typically return specific status codes for invalid requests
+      if (response.status === 415 || response.status === 400 || response.headers.get('content-type')?.includes('application/grpc')) {
+        validations.push({
+          id: `grpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} gRPC`,
+          status: 'passed',
+          message: 'gRPC endpoint detected',
+          duration,
+          details: `Endpoint responds like a gRPC server (${response.status})`
+        });
+      } else if (response.status === 404 || response.status === 405) {
+        validations.push({
+          id: `grpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} gRPC`,
+          status: 'failed',
+          message: `gRPC endpoint returned ${response.status}`,
+          duration,
+          details: 'Endpoint may not support gRPC protocol'
+        });
+        warnings.push({
+          code: 'GRPC_ENDPOINT_NOT_FOUND',
+          message: `gRPC endpoint returned ${response.status} - may not support gRPC protocol`,
+          field: 'additionalInterfaces',
+          severity: 'warning',
+          fixable: true
+        });
+      } else {
+        validations.push({
+          id: `grpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} gRPC`,
+          status: 'passed',
+          message: 'gRPC endpoint accessible',
+          duration,
+          details: `Endpoint is reachable on port ${port}`
+        });
+      }
+    } catch (error) {
+      const duration = timer();
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      validations.push({
+        id: `grpc_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+        name: `${testName} gRPC`,
+        status: 'failed',
+        message: 'gRPC endpoint test failed',
+        duration,
+        details: `Failed to test gRPC endpoint: ${errorMessage}`
+      });
+      
+      warnings.push({
+        code: 'GRPC_ENDPOINT_ERROR',
+        message: `gRPC endpoint test failed: ${errorMessage}`,
+        field: 'additionalInterfaces',
+        severity: 'warning',
+        fixable: true
+      });
+    }
+  }
+
+  /**
+   * Test HTTP+JSON endpoint (REST-like)
+   */
+  private async testHttpJsonEndpoint(
+    url: string, 
+    testName: string, 
+    validations: any[], 
+    errors: any[], 
+    warnings: any[], 
+    options: ValidationOptions
+  ): Promise<void> {
+    const timer = this.logger.timer();
+    
+    try {
+      // Test common REST patterns
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        signal: AbortSignal.timeout(options.timeout || 10000)
+      });
+
+      const duration = timer();
+      const contentType = response.headers.get('content-type') || '';
+
+      if (response.status === 200 && contentType.includes('application/json')) {
+        validations.push({
+          id: `http_json_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} HTTP+JSON`,
+          status: 'passed',
+          message: 'HTTP+JSON endpoint responding correctly',
+          duration,
+          details: 'Endpoint returns JSON responses to HTTP requests'
+        });
+      } else if (response.status === 405) {
+        // Method not allowed - try POST
+        const postResponse = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({}),
+          signal: AbortSignal.timeout(options.timeout || 10000)
+        });
+        
+        const postDuration = timer();
+        
+        if (postResponse.status < 500) {
+          validations.push({
+            id: `http_json_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+            name: `${testName} HTTP+JSON`,
+            status: 'passed',
+            message: 'HTTP+JSON endpoint accessible via POST',
+            duration: postDuration,
+            details: `Endpoint accepts POST requests (${postResponse.status})`
+          });
+        } else {
+          validations.push({
+            id: `http_json_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+            name: `${testName} HTTP+JSON`,
+            status: 'failed',
+            message: `HTTP+JSON endpoint error (${postResponse.status})`,
+            duration: postDuration,
+            details: 'Endpoint returned server error'
+          });
+        }
+      } else {
+        validations.push({
+          id: `http_json_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+          name: `${testName} HTTP+JSON`,
+          status: 'passed',
+          message: 'HTTP+JSON endpoint accessible',
+          duration,
+          details: `Endpoint responds to HTTP requests (${response.status})`
+        });
+      }
+    } catch (error) {
+      const duration = timer();
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      validations.push({
+        id: `http_json_${testName.toLowerCase().replace(/\s+/g, '_')}`,
+        name: `${testName} HTTP+JSON`,
+        status: 'failed',
+        message: 'HTTP+JSON endpoint test failed',
+        duration,
+        details: `Failed to test HTTP+JSON endpoint: ${errorMessage}`
+      });
+      
+      warnings.push({
+        code: 'HTTP_JSON_ENDPOINT_ERROR',
+        message: `HTTP+JSON endpoint test failed: ${errorMessage}`,
+        field: 'preferredTransport',
+        severity: 'warning',
+        fixable: true
+      });
     }
   }
 

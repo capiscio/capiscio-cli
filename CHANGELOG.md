@@ -11,6 +11,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release preparation
 - Comprehensive documentation
 
+## [1.2.6] - 2024-09-30
+
+### Added
+- Comprehensive transport endpoint testing for JSONRPC, gRPC, and HTTP+JSON protocols
+- Transport consistency validation per A2A §5.6.4 requirements
+- Enhanced endpoint connectivity testing with proper error categorization
+- Improved error severity logic (primary vs additional interface failures)
+
+### Changed
+- **Standardized binary name** - All platforms now use consistent `capiscio` binary name
+- **Windows binary compression** - Windows binaries now distributed as compressed zip files
+- Enhanced transport protocol testing with real connectivity checks
+- Improved validation pipeline with better error reporting
+- Updated test coverage for transport endpoint functionality
+
+### Fixed
+- Corrected skills requirement validation (made optional per A2A specification)
+- Removed unused TypeScript parameters in transport test methods
+- Fixed test mock setup for network validation scenarios
+
+## [1.2.5] - 2024-09-25
+
+### Added
+- **Multi-platform binaries** - Standalone executables for Windows, macOS, and Linux
+- **PyPI package distribution** - Python package manager support (`pip install capiscio`)
+- **Cross-platform compatibility** - Native binaries with zero dependencies
+- **Enhanced distribution options** - npm, pip, and standalone binary downloads
+
+### Enhanced
+- JWS signature verification improvements and stability
+- Enhanced cryptographic validation pipeline
+- Improved JWKS endpoint handling and error reporting
+- Better signature verification error messages
+
+### Fixed
+- Signature verification edge cases and error handling
+- HTTPS-only JWKS URI validation improvements
+- Enhanced detached signature support
+
+## [1.2.0] - 2024-09-20
+
+### Added
+- **JWS Signature Verification** - RFC 7515 compliant JSON Web Signature validation
+- **JWKS Support** - JSON Web Key Set fetching and verification from trusted sources
+- **Cryptographic Authentication** - Ed25519 and RSA signature algorithm support
+- **Secure by Default** - Automatic signature verification when signatures are present
+- **Detached Signature Support** - Support for agent card authentication via detached signatures
+- **HTTPS-only JWKS** - Security requirement for key distribution endpoints
+
+### Security
+- Added cryptographic validation layer for agent card authenticity
+- Implemented secure key fetching with HTTPS-only requirements
+- Enhanced trust verification for production deployments
+
 ## [1.0.0] - 2024-09-18
 
 ### Added

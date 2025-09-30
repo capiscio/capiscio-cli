@@ -231,7 +231,17 @@ describe('A2AValidator - Comprehensive Tests', () => {
         headers: { 'content-type': 'application/json' }
       };
 
-      (mockHttpClient.get as any).mockResolvedValueOnce(mockResponse);
+      // Mock both the agent card fetch AND the endpoint connectivity test
+      (mockHttpClient.get as any)
+        .mockResolvedValueOnce(mockResponse) // For agent card fetch
+        .mockResolvedValueOnce(mockResponse); // For endpoint connectivity test
+      
+      // Mock fetch for transport endpoint testing
+      mockFetch.mockResolvedValue({
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({})
+      });
 
       const result = await validator.validate('https://example.com/agent.json');
 
@@ -248,8 +258,16 @@ describe('A2AValidator - Comprehensive Tests', () => {
       };
 
       (mockHttpClient.get as any)
-        .mockRejectedValueOnce(mockError)
-        .mockResolvedValueOnce(mockResponse);
+        .mockRejectedValueOnce(mockError) // Direct URL fails
+        .mockResolvedValueOnce(mockResponse) // Well-known endpoint succeeds
+        .mockResolvedValueOnce(mockResponse); // Endpoint connectivity test
+      
+      // Mock fetch for transport endpoint testing
+      mockFetch.mockResolvedValue({
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({})
+      });
 
       const result = await validator.validate('https://example.com');
 
@@ -266,9 +284,17 @@ describe('A2AValidator - Comprehensive Tests', () => {
       };
 
       (mockHttpClient.get as any)
-        .mockRejectedValueOnce(mockError)
-        .mockRejectedValueOnce(mockError)
-        .mockResolvedValueOnce(mockResponse);
+        .mockRejectedValueOnce(mockError) // Direct URL fails
+        .mockRejectedValueOnce(mockError) // Well-known endpoint fails
+        .mockResolvedValueOnce(mockResponse) // Legacy endpoint succeeds
+        .mockResolvedValueOnce(mockResponse); // Endpoint connectivity test
+      
+      // Mock fetch for transport endpoint testing
+      mockFetch.mockResolvedValue({
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: () => Promise.resolve({})
+      });
 
       const result = await validator.validate('https://example.com');
 
