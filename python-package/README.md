@@ -8,6 +8,8 @@
 [![Downloads](https://img.shields.io/pypi/dm/capiscio)](https://pypi.org/project/capiscio/)
 [![Python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://python.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/capiscio/capiscio-cli/blob/main/LICENSE)
+[![Security](https://img.shields.io/badge/security-JWS%20verified-green.svg)](https://capisc.io)
+[![A2A Protocol](https://img.shields.io/badge/A2A-v0.3.0-purple.svg)](https://capisc.io)
 
 ## Installation
 
@@ -34,6 +36,21 @@ capiscio validate ./agent-card.json --strict --json
 # Skip signature verification when not needed
 capiscio validate ./agent-card.json --skip-signature
 ```
+
+## Security & Trust 🔐
+
+**Industry-grade cryptographic validation:**
+- ✅ **RFC 7515 compliant** JWS signature verification
+- ✅ **HTTPS-only** JWKS endpoint fetching
+- ✅ **Secure by default** - signatures checked automatically
+- ✅ **Zero trust** - verify before you trust any agent card
+- ✅ **Production ready** - meets enterprise security standards
+
+**Why signature verification matters:**
+- **Prevent tampering** - Detect modified or malicious agent cards
+- **Establish authenticity** - Cryptographically verify publisher identity
+- **Enable trust networks** - Build secure agent ecosystems
+- **Regulatory compliance** - Meet security audit requirements
 
 ## Key Features
 
