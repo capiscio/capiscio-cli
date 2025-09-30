@@ -4,35 +4,56 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "capiscio"
-version = "1.2.5"
-description = "A2A protocol validator and CLI tool"
+version = "1.2.6"
+description = "The definitive A2A protocol validator with live endpoint testing, JWS signature verification, and transport protocol compliance checking"
 readme = "README.md"
 requires-python = ">=3.7"
-license = "MIT"
+license = {text = "MIT"}
 authors = [
     {name = "Capiscio Team", email = "hello@capiscio.com"}
 ]
-keywords = ["a2a", "protocol", "validation", "cli"]
+maintainers = [
+    {name = "Capiscio Team", email = "hello@capiscio.com"}
+]
+keywords = [
+    "a2a", "protocol", "validation", "cli", "agent", "ai", "jsonrpc", "grpc", "rest", 
+    "jws", "signature", "verification", "transport", "testing", "compliance", 
+    "agent-card", "llm", "agent-to-agent", "cryptography", "security", "endpoint"
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators", 
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.8", 
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
+    "Environment :: Console",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Security :: Cryptography",
+    "Topic :: System :: Networking",
+    "Topic :: System :: Distributed Computing",
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/capiscio/capiscio-cli"
+"Homepage" = "https://capisc.io"
+"Documentation" = "https://capisc.io/cli"
+"Repository" = "https://github.com/capiscio/capiscio-cli"
 "Bug Reports" = "https://github.com/capiscio/capiscio-cli/issues"
+"Changelog" = "https://github.com/capiscio/capiscio-cli/releases"
+"Download" = "https://capisc.io/downloads"
+"Web Validator" = "https://capisc.io/validator"
 "Source" = "https://github.com/capiscio/capiscio-cli"
 
 [project.scripts]

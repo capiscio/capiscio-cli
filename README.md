@@ -1,6 +1,6 @@
 # Capiscio CLI - A2A Protocol Validator
 
-> **Validator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
+> **Comprehensive validation for AI agent trust and protocol compliance** | Beyond schema validation - test cryptographic authenticity and live protocol functionality.
 
 🌐 **[Learn more about Capiscio](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
 
@@ -12,6 +12,25 @@
 [![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](https://github.com/capiscio/capiscio-cli/security)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## Common A2A Integration Challenges
+
+**Agent cards can pass schema validation but fail in production due to real-world integration issues.**
+
+### What Often Goes Wrong:
+- **� Endpoint connectivity** - declared URLs return 404 or timeout
+- **� Protocol implementation gaps** - JSONRPC/GRPC errors in production  
+- **🔒 Missing cryptographic signatures** - no way to verify agent authenticity
+- **� Specification compliance** - subtle A2A protocol violations
+- **⚠️ Schema vs reality** - valid JSON but broken functionality
+
+### How Capiscio Helps:
+- **🔒 JWS signature verification** - cryptographically verify agent authenticity
+- **🌐 Live endpoint testing** - catch broken protocols before deployment
+- **⚡ Zero-dependency validation** - no npm vulnerabilities or Python conflicts
+- **🛡️ Comprehensive validation** - trust AND functionality in one command
+
+---
 
 ## Quick Start
 
@@ -54,7 +73,7 @@ capiscio validate ./agent-card.json --strict --json
 | **Linux** | x64 | [`capiscio-linux-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz) | ~18.2MB |
 | **macOS** | Intel | [`capiscio-darwin-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz) | ~18.3MB |
 | **macOS** | Apple Silicon | [`capiscio-darwin-arm64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz) | ~16.6MB |
-| **Windows** | Intel x64 | [`capiscio-win-x64.exe`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe) | ~41.3MB |
+| **Windows** | Intel x64 | [`capiscio-win-x64.zip`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.zip) | ~14.7MB |
 
 > **Note:** Windows ARM64 users should install via npm (`npm install -g capiscio-cli`) or pip (`pip install capiscio`) instead.
 
@@ -63,38 +82,37 @@ capiscio validate ./agent-card.json --strict --json
 # Linux x64
 curl -L -o capiscio-linux-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz
 tar -xzf capiscio-linux-x64.tar.gz
-chmod +x capiscio-linux-x64
+chmod +x capiscio
 
 # macOS Intel
 curl -L -o capiscio-darwin-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz
 tar -xzf capiscio-darwin-x64.tar.gz
-chmod +x capiscio-darwin-x64
+chmod +x capiscio
 
 # macOS Apple Silicon (M1/M2/M3/M4)
 curl -L -o capiscio-darwin-arm64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz
 tar -xzf capiscio-darwin-arm64.tar.gz
-chmod +x capiscio-darwin-arm64
+chmod +x capiscio
 
 # Windows Intel (PowerShell)
-Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.exe" -OutFile "capiscio.exe"
+Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.zip" -OutFile "capiscio-win-x64.zip"
+Expand-Archive -Path capiscio-win-x64.zip -DestinationPath .
 
-# Use the binary
-./capiscio-linux-x64 validate ./agent-card.json
-# or ./capiscio-darwin-* validate ./agent-card.json
-# or .\capiscio.exe validate .\agent-card.json
+# Use the binary (all platforms)
+./capiscio validate ./agent-card.json
+# or .\capiscio.exe validate .\agent-card.json (Windows)
 ```
 
 ## Key Features
 
-- **🚀 Transport Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints
-- **🔐 JWS Signature Verification** - Cryptographic validation of agent cards (RFC 7515 compliant)
-- **💻 Cross-Platform Binaries** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
-- **🔍 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
-- **⚡ Three Validation Modes** - Progressive, strict, and conservative
-- **🔧 CI/CD Ready** - JSON output with proper exit codes
-- **🌐 Live Endpoint Testing** - Validates real connectivity, not just schemas
-- **🛡️ Secure by Default** - Signature verification enabled automatically
-- **⚡ No Dependencies** - Standalone binaries require no Node.js installation
+- **� Two-Layer Validation** - ONLY Capiscio validates both cryptographic trust AND protocol compliance
+- **� JWS Signature Verification** - Cryptographic validation of agent authenticity (RFC 7515 compliant)
+- **� Live Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints (not just schemas)
+- **⚡ Zero Dependencies** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
+- **�️ Secure by Default** - Signature verification enabled automatically
+- **🔧 CI/CD Ready** - JSON output with proper exit codes for automated pipelines
+- **🌐 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
+- **💻 Cross-Platform** - npm, pip, or standalone binaries
 
 ## Usage
 
@@ -135,20 +153,24 @@ capiscio validate ./agent-card.json --show-version   # Version analysis
 
 ## Why Use Capiscio CLI?
 
-**Catch Integration Issues Before Production:**
-- ❌ Schema validators miss broken JSONRPC endpoints  
-- ❌ Manual testing doesn't cover all transport protocols
-- ❌ Integration failures happen at runtime
-- ❌ Unsigned agent cards can't be trusted
-- ✅ **Capiscio tests actual connectivity and protocol compliance**
-- ✅ **Capiscio verifies cryptographic signatures for authenticity**
+**Stop Integration Disasters Before They Happen:**
 
-**Real Problems This Solves:**
-- JSONRPC methods return wrong error codes
-- GRPC services are unreachable or misconfigured  
-- REST endpoints don't match declared capabilities
-- Agent cards validate but agents don't work
-- Unsigned or tampered agent cards pose security risks
+### 🚨 What Breaks When You Don't Validate
+- **Compromised agents inject malicious responses** - unsigned cards can't be trusted
+- **JSONRPC methods return wrong error codes** - protocol violations cause failures
+- **GRPC services are unreachable or misconfigured** - integration breaks silently
+- **REST endpoints don't match declared capabilities** - runtime mismatches
+- **Tampered agent cards** - man-in-the-middle attacks succeed
+- **Production failures cascade** - one bad agent brings down your system
+
+### ✅ Capiscio Prevents These Failures
+- **JWS signature verification** - cryptographically prove agent authenticity  
+- **Live endpoint connectivity testing** - catch broken protocols before deployment
+- **A2A protocol compliance validation** - prevent specification violations
+- **HTTPS-only JWKS security** - tamper-proof key distribution
+- **Real connectivity validation** - beyond schema to actual functionality
+
+**The only CLI that validates both cryptographic trust AND protocol compliance.**
 
 ## Transport Protocol Testing & Security
 
