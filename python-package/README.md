@@ -1,4 +1,4 @@
-# Capiscio CLI - A2A Protocol Validator (Python Package)
+# Capiscio CLI - A2A Protocol Validator
 
 > **Validator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
 
