@@ -41,7 +41,7 @@ jobs:
           - os: windows-latest
             platform: win32
             target: node18-win-x64
-            binary_name: capiscio-win-x64.exe
+            binary_name: capiscio-win-x64
 
     steps:
       - name: Checkout repository
@@ -66,7 +66,7 @@ jobs:
         run: mkdir -p dist/binaries
 
       - name: Create binary with pkg
-        run: npx pkg dist/cli-bundled.js --targets ${{ matrix.target }} --output dist/binaries/${{ matrix.binary_name }}
+        run: npx pkg dist/cli-bundled.js --targets ${{ matrix.target }} --output dist/binaries/${{ matrix.binary_name }}${{ matrix.platform == 'win32' && '.exe' || '' }}
 
       - name: Sign macOS binary (ad-hoc)
         if: runner.os == 'macOS'
@@ -82,29 +82,39 @@ jobs:
       - name: Test binary (Windows)
         if: runner.os == 'Windows'
         run: |
-          dist\binaries\${{ matrix.binary_name }} --version
+          dist\binaries\${{ matrix.binary_name }}.exe --version
 
-      - name: Create tarball for Linux binary
+      - name: Rename binary to generic name and create tarball (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           cd dist/binaries
-          tar -czf capiscio-linux-x64.tar.gz capiscio-linux-x64
-          # Remove the original binary since we now have the tarball
-          rm capiscio-linux-x64
+          mv capiscio-linux-x64 capiscio
+          tar -czf capiscio-linux-x64.tar.gz capiscio
+          # Remove the renamed binary since we now have the tarball
+          rm capiscio
 
-      - name: Create tarball for macOS binary
+      - name: Rename binary to generic name and create tarball (macOS)
         if: matrix.os == 'macos-latest'
         run: |
           cd dist/binaries
-          tar -czf ${{ matrix.binary_name }}.tar.gz ${{ matrix.binary_name }}
-          # Remove the original binary since we now have the tarball
-          rm ${{ matrix.binary_name }}
+          mv ${{ matrix.binary_name }} capiscio
+          tar -czf ${{ matrix.binary_name }}.tar.gz capiscio
+          # Remove the renamed binary since we now have the tarball
+          rm capiscio
+
+      - name: Rename Windows binary to generic name and create zip
+        if: runner.os == 'Windows'
+        run: |
+          cd dist/binaries
+          ren ${{ matrix.binary_name }}.exe capiscio.exe
+          Compress-Archive -Path capiscio.exe -DestinationPath capiscio-win-x64.zip
+          del capiscio.exe
 
       - name: Upload binary to release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
+          files: dist/binaries/${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && format('{0}.tar.gz', matrix.binary_name) || 'capiscio-win-x64.zip' }}
           tag_name: ${{ github.ref_name }}
           draft: true
           fail_on_unmatched_files: true
@@ -115,8 +125,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
-          path: dist/binaries/${{ matrix.binary_name }}${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && '.tar.gz' || '' }}
+          name: ${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && format('{0}.tar.gz', matrix.binary_name) || 'capiscio-win-x64.zip' }}
+          path: dist/binaries/${{ (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && format('{0}.tar.gz', matrix.binary_name) || 'capiscio-win-x64.zip' }}
           retention-days: 7
 
   # Summary job
