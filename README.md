@@ -54,7 +54,7 @@ capiscio validate ./agent-card.json --strict --json
 | **Linux** | x64 | [`capiscio-linux-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz) | ~18.2MB |
 | **macOS** | Intel | [`capiscio-darwin-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz) | ~18.3MB |
 | **macOS** | Apple Silicon | [`capiscio-darwin-arm64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz) | ~16.6MB |
-| **Windows** | Intel x64 | [`capiscio-win-x64.zip`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.zip) | ~41.3MB |
+| **Windows** | Intel x64 | [`capiscio-win-x64.zip`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.zip) | ~14.7MB |
 
 > **Note:** Windows ARM64 users should install via npm (`npm install -g capiscio-cli`) or pip (`pip install capiscio`) instead.
 
