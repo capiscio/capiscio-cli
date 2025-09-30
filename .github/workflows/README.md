@@ -92,7 +92,6 @@ npm run build:binaries
 | macOS | Intel x64 | `node18-macos-x64` | `capiscio-darwin-x64` | ~54MB |  
 | macOS | ARM64 | `node18-macos-arm64` | `capiscio-darwin-arm64` | ~48MB |
 | Windows | Intel x64 | `node18-win-x64` | `capiscio-win-x64.exe` | ~41MB |
-| Windows | ARM64 | `node18-win-arm64` | `capiscio-win-arm64.exe` | ~29MB |
 
 ## Security
 

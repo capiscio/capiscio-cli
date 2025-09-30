@@ -39,11 +39,6 @@ jobs:
             platform: Windows (Intel)
             target: node18-win-x64
             binary: capiscio-win-x64.exe
-            
-          - os: windows-latest
-            platform: Windows (ARM64)  
-            target: node18-win-arm64
-            binary: capiscio-win-arm64.exe
 
     steps:
       - name: Checkout repository
