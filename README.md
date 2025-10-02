@@ -18,11 +18,11 @@
 **Agent cards can pass schema validation but fail in production due to real-world integration issues.**
 
 ### What Often Goes Wrong:
-- **� Endpoint connectivity** - declared URLs return 404 or timeout
-- **� Protocol implementation gaps** - JSONRPC/GRPC errors in production  
+- **🔌 Endpoint connectivity** - declared URLs return 404 or timeout
+- **⚠️ Protocol implementation gaps** - JSONRPC/GRPC errors in production  
 - **🔒 Missing cryptographic signatures** - no way to verify agent authenticity
-- **� Specification compliance** - subtle A2A protocol violations
-- **⚠️ Schema vs reality** - valid JSON but broken functionality
+- **📋 Specification compliance** - subtle A2A protocol violations
+- **❌ Schema vs reality** - valid JSON but broken functionality
 
 ### How Capiscio Helps:
 - **🔒 JWS signature verification** - cryptographically verify agent authenticity
@@ -105,11 +105,11 @@ Expand-Archive -Path capiscio-win-x64.zip -DestinationPath .
 
 ## Key Features
 
-- **� Two-Layer Validation** - ONLY Capiscio validates both cryptographic trust AND protocol compliance
-- **� JWS Signature Verification** - Cryptographic validation of agent authenticity (RFC 7515 compliant)
-- **� Live Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints (not just schemas)
+- **🔐 Two-Layer Validation** - ONLY Capiscio validates both cryptographic trust AND protocol compliance
+- **✅ JWS Signature Verification** - Cryptographic validation of agent authenticity (RFC 7515 compliant)
+- **🚀 Live Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints (not just schemas)
 - **⚡ Zero Dependencies** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
-- **�️ Secure by Default** - Signature verification enabled automatically
+- **🛡️ Secure by Default** - Signature verification enabled automatically
 - **🔧 CI/CD Ready** - JSON output with proper exit codes for automated pipelines
 - **🌐 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
 - **💻 Cross-Platform** - npm, pip, or standalone binaries
@@ -142,6 +142,41 @@ capiscio validate ./agent-card.json --show-version   # Version analysis
 | --timeout <ms> | Request timeout (default: 10000) |
 | --schema-only | Skip live endpoint testing |
 | --skip-signature | Skip JWS signature verification |
+| --test-live | Test agent endpoint with real messages |
+
+### Live Agent Testing
+
+The `--test-live` flag tests your agent endpoint with real A2A protocol messages:
+
+```bash
+# Test agent endpoint
+capiscio validate https://agent.com --test-live
+
+# Test with custom timeout
+capiscio validate ./agent-card.json --test-live --timeout 5000
+
+# Full validation for production
+capiscio validate https://agent.com --test-live --strict --json
+```
+
+**What it validates:**
+- ✅ Endpoint connectivity
+- ✅ JSONRPC and HTTP+JSON transport protocols  
+- ✅ A2A message structure (Message, Task, StatusUpdate, ArtifactUpdate)
+- ✅ Response timing metrics
+
+**Exit codes for automation:**
+- `0` = Success
+- `1` = Schema validation failed
+- `2` = Network error (timeout, connection refused, DNS)
+- `3` = Protocol violation (invalid A2A response)
+
+**Use cases:**
+- CI/CD post-deployment verification
+- Cron-based health monitoring
+- Pre-production testing
+- Third-party agent evaluation
+- Multi-environment validation
 
 ### Validation Modes
 
