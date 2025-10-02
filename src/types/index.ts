@@ -1,21 +1,21 @@
-// A2A Protocol Types - Based on v0.3.0 specification
+// A2A Protocol Types - Based on v0.3.0 specification (aligned with official TypeScript types)
 export interface AgentCard {
-  protocolVersion: string;
+  protocolVersion: string; // REQUIRED per official A2A spec
   name: string;
   description: string;
   url: string;
-  preferredTransport: TransportProtocol;
+  preferredTransport?: TransportProtocol; // OPTIONAL per official A2A spec (default: "JSONRPC")
   additionalInterfaces?: AgentInterface[];
-  provider: AgentProvider;
+  provider?: AgentProvider; // Optional per official spec, but organization required if present
   iconUrl?: string;
   version: string;
   documentationUrl?: string;
-  capabilities?: AgentCapabilities;
+  capabilities: AgentCapabilities; // REQUIRED per official A2A specification
   securitySchemes?: Record<string, SecurityScheme>;
   security?: Array<Record<string, string[]>>;
-  defaultInputModes?: string[];
-  defaultOutputModes?: string[];
-  skills?: AgentSkill[];
+  defaultInputModes: string[]; // REQUIRED per official A2A specification
+  defaultOutputModes: string[]; // REQUIRED per official A2A specification
+  skills: AgentSkill[]; // REQUIRED per official A2A specification
   supportsAuthenticatedExtendedCard?: boolean;
   signatures?: AgentCardSignature[];
   extensions?: AgentExtension[];
@@ -23,7 +23,7 @@ export interface AgentCard {
 
 export interface AgentProvider {
   organization: string;
-  url?: string;
+  url: string; // REQUIRED per official A2A TypeScript types
 }
 
 export interface AgentCapabilities {
@@ -51,7 +51,7 @@ export interface AgentSkill {
   id: string;
   name: string;
   description: string;
-  tags?: string[];
+  tags: string[]; // REQUIRED per official A2A specification
   examples?: string[];
   inputModes?: string[];
   outputModes?: string[];

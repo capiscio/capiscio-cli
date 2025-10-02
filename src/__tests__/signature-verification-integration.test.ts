@@ -22,9 +22,24 @@ describe('Signature Verification Integration', () => {
     url: 'https://example.com/agent',
     preferredTransport: 'HTTP+JSON',
     provider: {
-      organization: 'Test Corp'
+      organization: 'Test Corp',
+      url: 'https://testcorp.com'
     },
     version: '1.0.0',
+    capabilities: {
+      streaming: false,
+      pushNotifications: false
+    },
+    defaultInputModes: ['text/plain'],
+    defaultOutputModes: ['text/plain'],
+    skills: [
+      {
+        id: 'test-skill',
+        name: 'Test Skill',
+        description: 'A test skill',
+        tags: ['test']
+      }
+    ],
     ...(signatures && { signatures })
   });
 

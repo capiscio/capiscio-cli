@@ -29,18 +29,22 @@ describe('A2AValidator - Comprehensive Tests', () => {
     url: 'https://example.com/agent',
     preferredTransport: 'HTTP+JSON',
     provider: {
-      organization: 'Test Corp'
+      organization: 'Test Corp',
+      url: 'https://testcorp.com'
     },
     version: '1.0.0',
     capabilities: {
       streaming: true,
       pushNotifications: false
     },
+    defaultInputModes: ['text/plain', 'application/json'],
+    defaultOutputModes: ['text/plain', 'application/json'],
     skills: [
       {
         id: 'test-skill',
         name: 'Test Skill',
         description: 'A test skill',
+        tags: ['test', 'example'],
         examples: ['Example 1', 'Example 2']
       }
     ]
@@ -85,11 +89,17 @@ describe('A2AValidator - Comprehensive Tests', () => {
       expect(result.score).toBeLessThan(100);
       
       const errorFields = result.errors.map(e => e.field);
-      expect(errorFields).toContain('protocolVersion');
-      expect(errorFields).toContain('preferredTransport');
-      expect(errorFields).toContain('url');
-      expect(errorFields).toContain('provider'); // provider object missing entirely
-      expect(errorFields).toContain('version');
+      // Check for required fields per official A2A spec
+      expect(errorFields).toContain('protocolVersion'); // Required
+      expect(errorFields).toContain('url'); // Required
+      expect(errorFields).toContain('version'); // Required
+      expect(errorFields).toContain('capabilities'); // Required
+      expect(errorFields).toContain('defaultInputModes'); // Required
+      expect(errorFields).toContain('defaultOutputModes'); // Required
+      expect(errorFields).toContain('skills'); // Required
+      // preferredTransport and provider are OPTIONAL per official A2A spec
+      expect(errorFields).not.toContain('preferredTransport'); // Optional (defaults to JSONRPC)
+      expect(errorFields).not.toContain('provider'); // Optional
     });
 
     it('should validate transport protocols', async () => {
