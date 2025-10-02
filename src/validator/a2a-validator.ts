@@ -391,17 +391,25 @@ export class A2AValidator {
 
     this.logger.step('Validating schema structure');
 
-    // Required fields validation (per A2A v0.3.0 specification)
-    const requiredFields = ['name', 'description', 'url', 'provider', 'version'];
-    
-    // A2A v0.3.0 specific required fields
-    const v030RequiredFields = ['protocolVersion', 'preferredTransport'];
+    // Required fields per official A2A specification (matching A2A TypeScript types)
+    // See: A2A/types/src/types.ts - AgentCard interface
+    const requiredFields = [
+      'name',
+      'description', 
+      'url',
+      'version',
+      'protocolVersion',
+      'capabilities',
+      'defaultInputModes',
+      'defaultOutputModes',
+      'skills'
+    ];
     
     this.logger.debug('Checking required fields', { 
-      requiredFields: [...requiredFields, ...v030RequiredFields] 
+      requiredFields 
     });
     
-    [...requiredFields, ...v030RequiredFields].forEach(field => {
+    requiredFields.forEach(field => {
       if (!this.getNestedValue(card, field)) {
         this.logger.debug(`Missing required field: ${field}`);
         errors.push({
@@ -426,12 +434,32 @@ export class A2AValidator {
       });
     }
 
-    // Provider organization validation (v0.3.0 requirement)
+    // Provider validation: provider itself is optional per A2A spec,
+    // but if present, both organization and url are required (per AgentProvider interface)
     if (card.provider && !card.provider.organization) {
       errors.push({
         code: 'SCHEMA_VALIDATION_ERROR',
         message: 'provider.organization: Required',
         field: 'provider.organization',
+        severity: 'error',
+        fixable: true
+      });
+    }
+
+    // Provider URL validation (required per official A2A TypeScript specification)
+    if (card.provider && !card.provider.url) {
+      errors.push({
+        code: 'SCHEMA_VALIDATION_ERROR',
+        message: 'provider.url: Required when provider is specified',
+        field: 'provider.url',
+        severity: 'error',
+        fixable: true
+      });
+    } else if (card.provider && card.provider.url && !this.isValidUrl(card.provider.url)) {
+      errors.push({
+        code: 'SCHEMA_VALIDATION_ERROR',
+        message: 'provider.url: Must be a valid URL',
+        field: 'provider.url',
         severity: 'error',
         fixable: true
       });
@@ -504,6 +532,17 @@ export class A2AValidator {
 
     // Skills validation
     if (card.skills) {
+      // Validate skills array is not empty (required to have at least one skill)
+      if (card.skills.length === 0) {
+        errors.push({
+          code: 'SCHEMA_VALIDATION_ERROR',
+          message: 'skills: Must contain at least one skill. Agents must declare their capabilities.',
+          field: 'skills',
+          severity: 'error',
+          fixable: true
+        });
+      }
+      
       const skillIds = new Set<string>();
       
       card.skills.forEach((skill, index) => {
@@ -572,6 +611,25 @@ export class A2AValidator {
             code: 'SCHEMA_VALIDATION_ERROR',
             message: `skills.${index}.description: Maximum 2000 characters allowed`,
             field: `skills.${index}.description`,
+            severity: 'error',
+            fixable: true
+          });
+        }
+
+        // Validate tags field (required per A2A specification)
+        if (!skill.tags || !Array.isArray(skill.tags)) {
+          errors.push({
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: `skills.${index}.tags: Required field. Tags help categorize and discover agent skills.`,
+            field: `skills.${index}.tags`,
+            severity: 'error',
+            fixable: true
+          });
+        } else if (skill.tags.length === 0) {
+          errors.push({
+            code: 'SCHEMA_VALIDATION_ERROR',
+            message: `skills.${index}.tags: Must contain at least one tag`,
+            field: `skills.${index}.tags`,
             severity: 'error',
             fixable: true
           });
@@ -683,7 +741,9 @@ export class A2AValidator {
       
       // 3. No conflicts: same URL must not declare conflicting transports
       const urlTransportMap = new Map<string, string>();
-      urlTransportMap.set(card.url, card.preferredTransport);
+      // preferredTransport is optional but defaults to "JSONRPC" per A2A spec
+      const effectiveTransport = card.preferredTransport || 'JSONRPC';
+      urlTransportMap.set(card.url, effectiveTransport);
       
       card.additionalInterfaces.forEach((iface, index) => {
         const existingTransport = urlTransportMap.get(iface.url);
@@ -903,7 +963,9 @@ export class A2AValidator {
     await this.testEndpointConnectivity(card.url, 'Primary Endpoint', validations, errors, warnings, options, true);
 
     // 2. Test preferred transport endpoint - this is REQUIRED so failures are errors
-    await this.testTransportProtocol(card.url, card.preferredTransport, 'Preferred Transport', validations, errors, warnings, options, true);
+    // preferredTransport is optional but defaults to "JSONRPC" per A2A spec
+    const effectiveTransport = card.preferredTransport || 'JSONRPC';
+    await this.testTransportProtocol(card.url, effectiveTransport, 'Preferred Transport', validations, errors, warnings, options, true);
 
     // 3. Test additional interfaces if present - these are OPTIONAL so failures are warnings
     if (card.additionalInterfaces && card.additionalInterfaces.length > 0) {
