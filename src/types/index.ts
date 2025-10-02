@@ -110,6 +110,17 @@ export interface ValidationResult {
   suggestions: ValidationSuggestion[];
   validations: ValidationCheck[];
   versionInfo?: VersionValidationInfo;
+  liveTest?: LiveTestResult;
+}
+
+export interface LiveTestResult {
+  success: boolean;
+  endpoint: string;
+  responseTime: number;
+  errors: string[];
+  request?: any;
+  response?: any;
+  timestamp: string;
 }
 
 export interface VersionValidationInfo {
@@ -201,6 +212,7 @@ export interface CLIOptions {
   registryReady?: boolean;
   schemaOnly?: boolean;
   skipSignature?: boolean;
+  testLive?: boolean;
   json?: boolean;
   junit?: boolean;
   sarif?: boolean;

@@ -91,6 +91,41 @@ capiscio validate https://agent.com --errors-only    # Show only problems
 | --schema-only | Skip live endpoint testing |
 | --skip-signature | Skip JWS signature verification |
 | --registry-ready | Registry deployment validation |
+| --test-live | Test agent endpoint with real messages |
+
+### Live Agent Testing
+
+The `--test-live` flag tests your agent endpoint with real A2A protocol messages:
+
+```bash
+# Test agent endpoint
+capiscio validate https://agent.com --test-live
+
+# Test with custom timeout
+capiscio validate ./agent-card.json --test-live --timeout 5000
+
+# Full validation for production
+capiscio validate https://agent.com --test-live --strict --json
+```
+
+**What it validates:**
+- ✅ Endpoint connectivity
+- ✅ JSONRPC and HTTP+JSON transport protocols  
+- ✅ A2A message structure (Message, Task, StatusUpdate, ArtifactUpdate)
+- ✅ Response timing metrics
+
+**Exit codes for automation:**
+- `0` = Success
+- `1` = Schema validation failed
+- `2` = Network error (timeout, connection refused, DNS)
+- `3` = Protocol violation (invalid A2A response)
+
+**Use cases:**
+- CI/CD post-deployment verification
+- Cron-based health monitoring
+- Pre-production testing
+- Third-party agent evaluation
+- Multi-environment validation
 
 ## Signature Verification (New in v1.2.0)
 
