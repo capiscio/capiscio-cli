@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { A2AValidator } from '../validator/a2a-validator';
+import { LiveTester } from '../validator/live-tester';
 import { ConsoleOutput } from '../output/console';
 import { JsonOutput } from '../output/json';
 import { resolveInput, readAgentCard } from '../utils/file-utils';
@@ -19,6 +20,7 @@ export class ValidateCommand {
       .option('--skip-signature', 'Skip JWS signature verification (not recommended)')
       .option('--registry-ready', 'Check registry deployment readiness')
       .option('--schema-only', 'Validate schema only, skip endpoint testing')
+      .option('--test-live', 'Test live agent endpoint by sending a message')
       .option('--json', 'Output results in JSON format')
       .option('--errors-only', 'Show only errors and warnings')
       .option('--verbose', 'Show detailed validation steps and timing')
@@ -81,12 +83,79 @@ export class ValidateCommand {
 
       spinner.stop();
 
+      // Perform live agent testing if requested
+      if (options.testLive && !options.schemaOnly) {
+        const liveSpinner = ora('Testing live agent endpoint...').start();
+        
+        try {
+          // Get agent card for live testing
+          let agentCard;
+          if (resolved.type === 'file') {
+            agentCard = await readAgentCard(resolved.value);
+          } else {
+            // For URL input, we need to fetch the agent card
+            // We'll use the result from validation if available
+            agentCard = validationInput;
+          }
+
+          const liveTester = new LiveTester({
+            timeout: parseInt(options.timeout || '10000'),
+            verbose: options.verbose || false
+          });
+
+          const liveResult = await liveTester.testAgent(agentCard);
+          result.liveTest = liveResult;
+
+          if (liveResult.success) {
+            liveSpinner.succeed(`Live test passed (${liveResult.responseTime}ms)`);
+          } else {
+            liveSpinner.fail('Live test failed');
+            
+            // Update overall result
+            result.success = false;
+            liveResult.errors.forEach(error => {
+              result.errors.push({
+                code: 'LIVE_TEST_FAILED',
+                message: error,
+                severity: 'error' as const,
+                fixable: false
+              });
+            });
+          }
+        } catch (error) {
+          liveSpinner.fail('Live test error');
+          result.success = false;
+          result.errors.push({
+            code: 'LIVE_TEST_ERROR',
+            message: `Live test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            severity: 'error' as const,
+            fixable: false
+          });
+        }
+      } else if (options.testLive && options.schemaOnly) {
+        console.log(chalk.yellow('⚠️  --test-live requires network access and cannot be used with --schema-only'));
+      }
+
       // Choose output format and display results
       const outputFormatter = options.json ? new JsonOutput() : new ConsoleOutput();
       outputFormatter.display(result, resolved.value, options);
 
       // Exit with appropriate code
-      process.exit(result.success ? 0 : 1);
+      // Exit codes: 0=success, 1=validation/schema failed, 2=network error, 3=protocol violation
+      if (!result.success) {
+        // Check if failure is due to live test
+        if (result.liveTest && !result.liveTest.success) {
+          const hasNetworkError = result.liveTest.errors.some(err => 
+            err.includes('timeout') || 
+            err.includes('refused') || 
+            err.includes('unreachable') ||
+            err.includes('DNS')
+          );
+          process.exit(hasNetworkError ? 2 : 3); // 2=network, 3=protocol
+        }
+        process.exit(1); // Schema/validation failure
+      }
+      process.exit(0); // Success
 
     } catch (error) {
       spinner.fail('Validation failed');

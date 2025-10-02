@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { ValidationResult, ValidationCheck, CLIOptions } from '../types';
+import { ValidationResult, ValidationCheck, CLIOptions, LiveTestResult } from '../types';
 
 export class ConsoleOutput {
   display(result: ValidationResult, input: string, options: CLIOptions): void {
@@ -10,6 +10,11 @@ export class ConsoleOutput {
     
     // Summary metrics  
     this.displaySummary(result);
+    
+    // Live test results (if performed)
+    if (result.liveTest) {
+      this.displayLiveTest(result.liveTest);
+    }
     
     // Detailed results unless errors-only
     if (!options.errorsOnly) {
@@ -92,6 +97,30 @@ export class ConsoleOutput {
         console.log(chalk.gray(`   Duration: ${validation.duration}ms`));
       }
     });
+    
+    console.log();
+  }
+
+  private displayLiveTest(liveTest: LiveTestResult): void {
+    console.log(chalk.cyan.bold('🔗 LIVE ENDPOINT TESTING:'));
+    
+    if (liveTest.success) {
+      console.log(chalk.green(`✅ Live test passed`));
+      console.log(chalk.gray(`   Endpoint: ${liveTest.endpoint}`));
+      console.log(chalk.gray(`   Response Time: ${liveTest.responseTime}ms`));
+      
+      if (liveTest.response) {
+        const responseKind = liveTest.response.kind || 'unknown';
+        console.log(chalk.gray(`   Response Type: ${responseKind}`));
+      }
+    } else {
+      console.log(chalk.red(`❌ Live test failed`));
+      console.log(chalk.gray(`   Endpoint: ${liveTest.endpoint}`));
+      
+      liveTest.errors.forEach(error => {
+        console.log(chalk.red(`   • ${error}`));
+      });
+    }
     
     console.log();
   }
