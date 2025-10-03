@@ -10,6 +10,7 @@ Welcome to the Capiscio CLI documentation. This directory contains comprehensive
 
 - **[README.md](../README.md)** - Main usage guide with installation, examples, and CLI reference
 - **[Validation Process](validation-process.md)** - Exhaustive guide to the validation system
+- **[Scoring System](scoring-system.md)** - Three-dimensional scoring breakdown and best practices
 - **[API Reference](api-reference.md)** - Programmatic usage and TypeScript API documentation
 
 ### Developer Documentation
@@ -28,7 +29,8 @@ Welcome to the Capiscio CLI documentation. This directory contains comprehensive
 ### New Users
 1. Start with the [README](../README.md) for installation and basic usage
 2. Review [Validation Process](validation-process.md) to understand what's validated
-3. Check out the examples in the README
+3. Learn about [Scoring System](scoring-system.md) to interpret your results
+4. Check out the examples in the README
 
 ### Developers
 1. Read the [API Reference](api-reference.md) for programmatic usage
@@ -51,6 +53,7 @@ Welcome to the Capiscio CLI documentation. This directory contains comprehensive
 
 - **Install and use the CLI** → [README.md](../README.md)
 - **Understand what gets validated** → [Validation Process](validation-process.md)
+- **Understand scoring results** → [Scoring System](scoring-system.md)
 - **Use the CLI programmatically** → [API Reference](api-reference.md)
 - **Extend or modify the validator** → [Architecture](architecture.md)
 - **Contribute code** → [Contributing Guide](../CONTRIBUTING.md)

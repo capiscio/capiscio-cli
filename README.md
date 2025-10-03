@@ -186,6 +186,22 @@ capiscio validate https://agent.com --test-live --strict --json
 
 **Registry Ready:** Use `--registry-ready` for strict validation optimized for agent registry deployment.
 
+### Three-Dimensional Scoring
+
+Capiscio CLI automatically provides detailed quality scoring across three independent dimensions:
+
+```bash
+# Scoring is shown by default
+capiscio validate agent.json
+```
+
+**Three Quality Dimensions:**
+- **Spec Compliance (0-100)** - How well does the agent conform to A2A v0.3.0?
+- **Trust (0-100)** - How trustworthy and secure is this agent? (includes confidence multiplier)
+- **Availability (0-100)** - Is the endpoint operational? (requires `--test-live`)
+
+Each score includes a detailed breakdown showing exactly what contributed to the result. **Learn more:** [Scoring System Documentation](docs/scoring-system.md)
+
 ## Why Use Capiscio CLI?
 
 **Stop Integration Disasters Before They Happen:**

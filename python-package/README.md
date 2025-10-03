@@ -90,8 +90,23 @@ capiscio validate https://agent.com --errors-only    # Show only problems
 | --timeout <ms> | Request timeout (default: 10000) |
 | --schema-only | Skip live endpoint testing |
 | --skip-signature | Skip JWS signature verification |
-| --registry-ready | Registry deployment validation |
 | --test-live | Test agent endpoint with real messages |
+
+### Three-Dimensional Scoring
+
+Capiscio CLI automatically provides detailed quality scoring across three independent dimensions:
+
+```bash
+# Scoring is shown by default
+capiscio validate agent.json
+```
+
+**Three Quality Dimensions:**
+- **Spec Compliance (0-100)** - How well does the agent conform to A2A v0.3.0?
+- **Trust (0-100)** - How trustworthy and secure is this agent? (includes confidence multiplier)
+- **Availability (0-100)** - Is the endpoint operational? (requires `--test-live`)
+
+Each score includes a detailed breakdown showing exactly what contributed to the result. **Learn more:** [Scoring System Documentation](https://github.com/capiscio/capiscio-cli/blob/main/docs/scoring-system.md)
 
 ### Live Agent Testing
 
