@@ -214,7 +214,6 @@ export interface CLIOptions {
   schemaOnly?: boolean;
   skipSignature?: boolean;
   testLive?: boolean;
-  detailedScores?: boolean;
   json?: boolean;
   junit?: boolean;
   sarif?: boolean;

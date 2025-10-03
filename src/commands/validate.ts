@@ -22,7 +22,6 @@ export class ValidateCommand {
       .option('--registry-ready', 'Check registry deployment readiness')
       .option('--schema-only', 'Validate schema only, skip endpoint testing')
       .option('--test-live', 'Test live agent endpoint by sending a message')
-      .option('--detailed-scores', 'Show detailed three-dimensional scoring breakdown')
       .option('--json', 'Output results in JSON format')
       .option('--errors-only', 'Show only errors and warnings')
       .option('--verbose', 'Show detailed validation steps and timing')
@@ -138,46 +137,44 @@ export class ValidateCommand {
         console.log(chalk.yellow('⚠️  --test-live requires network access and cannot be used with --schema-only'));
       }
 
-      // Calculate detailed scores if requested
-      if (options.detailedScores) {
-        try {
-          // Get agent card
-          let agentCard;
-          if (resolved.type === 'file') {
-            agentCard = await readAgentCard(resolved.value);
-          } else {
-            agentCard = validationInput;
-          }
-
-          // Create scoring context
-          const scoringContext = createScoringContext({
-            schemaOnly: options.schemaOnly || resolved.type === 'file',
-            skipSignatureVerification: options.skipSignature || false,
-            testLive: options.testLive || false,
-            strictMode: options.strict || options.registryReady || false,
-          });
-
-          // Prepare scoring input
-          const scoringInput: any = {
-            agentCard,
-            validationErrors: result.errors.map(e => e.message),
-          };
-
-          if (result.liveTest) {
-            scoringInput.liveTestResult = {
-              success: result.liveTest.success,
-              responseTime: result.liveTest.responseTime,
-              errors: result.liveTest.errors,
-              response: result.liveTest.response,
-            };
-          }
-
-          // Calculate scores
-          const scoringResult = calculateScores(scoringInput, scoringContext);
-          result.scoringResult = scoringResult;
-        } catch (error) {
-          console.error(chalk.yellow(`⚠️  Could not calculate detailed scores: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      // Calculate detailed scores (always)
+      try {
+        // Get agent card
+        let agentCard;
+        if (resolved.type === 'file') {
+          agentCard = await readAgentCard(resolved.value);
+        } else {
+          agentCard = validationInput;
         }
+
+        // Create scoring context
+        const scoringContext = createScoringContext({
+          schemaOnly: options.schemaOnly || resolved.type === 'file',
+          skipSignatureVerification: options.skipSignature || false,
+          testLive: options.testLive || false,
+          strictMode: options.strict || options.registryReady || false,
+        });
+
+        // Prepare scoring input
+        const scoringInput: any = {
+          agentCard,
+          validationErrors: result.errors.map(e => e.message),
+        };
+
+        if (result.liveTest) {
+          scoringInput.liveTestResult = {
+            success: result.liveTest.success,
+            responseTime: result.liveTest.responseTime,
+            errors: result.liveTest.errors,
+            response: result.liveTest.response,
+          };
+        }
+
+        // Calculate scores
+        const scoringResult = calculateScores(scoringInput, scoringContext);
+        result.scoringResult = scoringResult;
+      } catch (error) {
+        console.error(chalk.yellow(`⚠️  Could not calculate detailed scores: ${error instanceof Error ? error.message : 'Unknown error'}`));
       }
 
       // Choose output format and display results

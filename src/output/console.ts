@@ -41,11 +41,9 @@ export class ConsoleOutput {
     console.log(status);
     console.log(chalk.gray(`Agent: ${input}`));
     
-    // Display scoring results if available and detailed
+    // Always display detailed scoring breakdown
     if (result.scoringResult) {
       this.displayDetailedScores(result.scoringResult);
-    } else {
-      console.log(chalk.gray(`Score: ${result.score}/100`));
     }
     
     if (result.versionInfo) {
