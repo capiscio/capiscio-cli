@@ -137,7 +137,6 @@ capiscio validate ./agent-card.json --show-version   # Version analysis
 | Option | Description |
 |--------|-------------|
 | --strict | Strict A2A protocol compliance |
-| --detailed-scores | Show three-dimensional scoring breakdown |
 | --json | JSON output for CI/CD |
 | --verbose | Detailed validation steps |
 | --timeout <ms> | Request timeout (default: 10000) |
@@ -189,11 +188,11 @@ capiscio validate https://agent.com --test-live --strict --json
 
 ### Three-Dimensional Scoring
 
-Capiscio CLI provides detailed quality scoring across three independent dimensions:
+Capiscio CLI automatically provides detailed quality scoring across three independent dimensions:
 
 ```bash
-# Show detailed scoring breakdown
-capiscio validate agent.json --detailed-scores
+# Scoring is shown by default
+capiscio validate agent.json
 ```
 
 **Three Quality Dimensions:**
