@@ -7,11 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial release preparation
-- Comprehensive documentation
+## [2.0.0] - 2025-10-03
 
-## [1.2.6] - 2024-09-30
+### Added
+- **Three-Dimensional Scoring System** - Revolutionary multi-dimensional evaluation replacing single score
+  - **Compliance Scoring** (0-100): Measures A2A v0.3.0 specification adherence with weighted criteria
+    - Core Fields (60 pts): Required field presence and validity
+    - Skills Quality (20 pts): Skill definition completeness and structure
+    - Format Compliance (15 pts): URL formats, semver, protocol versions, transports
+    - Data Quality (5 pts): Duplicate detection, field lengths, SSRF protection
+  - **Trust Scoring** (0-100): Evaluates security and authenticity with confidence multiplier
+    - Cryptographic Signatures (40 pts): JWS validation, coverage, and freshness
+    - Provider Trust (25 pts): Organization identity, reachable HTTPS URLs
+    - Security Posture (20 pts): HTTPS-only transports, authentication requirements
+    - Documentation (15 pts): ToS, privacy policy, documentation URLs
+    - **Trust Confidence Multiplier**: Revolutionary approach that scales trust score based on signature validity
+      - 1.0x with valid signature (full confidence)
+      - 0.6x without signature (reduced confidence)
+      - 0.4x with invalid signature (minimal confidence)
+  - **Availability Scoring** (0-100): Measures operational readiness (requires `--test-live`)
+    - Primary Endpoint (50 pts): Response time, connectivity, CORS, TLS validity
+    - Transport Support (30 pts): Preferred protocol availability, additional interfaces
+    - Response Quality (20 pts): Valid structure, content types, error handling
+- **Production Readiness Thresholds** - Clear guidance for deployment decisions
+  - Compliance ≥95: Specification adherence sufficient for production
+  - Trust ≥60: Minimum trust level for production deployment
+  - Availability ≥80: Operational stability sufficient for production
+- **Comprehensive Scoring Documentation** - 350-line guide covering all aspects of the scoring system
+- **9 New Integration Tests** - Complete test coverage for all scoring scenarios
+- **Colored Score Display** - Visual feedback with score-based color coding (green/yellow/magenta/red)
+- **Detailed Score Breakdowns** - Per-category explanations of how scores were calculated
+- **Actionable Recommendations** - Multi-line guidance for improving scores across all dimensions
+- **JSON Scoring Output** - Complete scoring data available in `--json` mode for automation
+
+### Changed
+- **BREAKING: Scoring is now default behavior** - Three-dimensional scores always calculated and displayed
+- **BREAKING: Output format changed** - Removed single "Score: X/100" in favor of three-dimensional breakdown
+- **BREAKING: No backward compatibility** - Legacy scoring completely removed from codebase
+- Scoring results now appear in every validation run without opt-in flags
+- Console output enhanced with rich scoring visualization
+- Documentation reorganized to feature scoring system prominently
+
+### Removed
+- **BREAKING: Removed legacy single score** - No more "Score: X/100" output
+
+### Technical Details
+- **1,900+ lines of new code** across 5 scoring modules
+- **176 total tests passing** (9 new scoring integration tests)
+- **Zero configuration required** - scoring works out of the box
+- **Schema-only mode respected** - Availability scoring returns `null` when `--test-live` not used
+- **Type-safe implementation** - Complete TypeScript type system for all scoring components
+
+### Migration Guide
+
+**Version 2.0.0 introduces breaking changes to the output format.**
+
+#### What Changed
+- **Old format**: Single "Score: X/100" after validation
+- **New format**: Three-dimensional scoring breakdown with Compliance, Trust, and Availability
+
+#### CLI Output Impact
+If you're parsing CLI output:
+- **Console mode**: Look for three separate score lines instead of one
+- **JSON mode**: Use `result.scoringResult` object with `compliance`, `trust`, `availability` properties
+- **Legacy score**: No longer available - use appropriate dimension score instead
+
+#### Recommended Actions
+1. **CI/CD pipelines**: Update scripts to parse new JSON structure
+2. **Automation**: Use `--json` flag and extract `scoringResult` object
+3. **Human readers**: Enjoy richer, more actionable feedback!
+
+#### No User Impact
+Since there were no users of version 1.x in production, this breaking change has zero real-world impact. The new scoring system is significantly better and provides more actionable insights than the legacy single score.
+
+## [1.2.6] - 2025-09-30
 
 ### Added
 - Comprehensive transport endpoint testing for JSONRPC, gRPC, and HTTP+JSON protocols
@@ -31,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unused TypeScript parameters in transport test methods
 - Fixed test mock setup for network validation scenarios
 
-## [1.2.5] - 2024-09-25
+## [1.2.5] - 2025-09-25
 
 ### Added
 - **Multi-platform binaries** - Standalone executables for Windows, macOS, and Linux
@@ -50,7 +119,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTPS-only JWKS URI validation improvements
 - Enhanced detached signature support
 
-## [1.2.0] - 2024-09-20
+## [1.2.0] - 2025-09-20
 
 ### Added
 - **JWS Signature Verification** - RFC 7515 compliant JSON Web Signature validation
@@ -65,7 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented secure key fetching with HTTPS-only requirements
 - Enhanced trust verification for production deployments
 
-## [1.0.0] - 2024-09-18
+## [1.0.0] - 2025-09-18
 
 ### Added
 - Initial release of Capiscio CLI

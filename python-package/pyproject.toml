@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "capiscio"
-version = "1.2.6"
+version = "2.0.0"
 description = "The definitive A2A protocol validator with live endpoint testing, JWS signature verification, and transport protocol compliance checking"
 readme = "README.md"
 requires-python = ">=3.7"
