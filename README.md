@@ -137,6 +137,7 @@ capiscio validate ./agent-card.json --show-version   # Version analysis
 | Option | Description |
 |--------|-------------|
 | --strict | Strict A2A protocol compliance |
+| --detailed-scores | Show three-dimensional scoring breakdown |
 | --json | JSON output for CI/CD |
 | --verbose | Detailed validation steps |
 | --timeout <ms> | Request timeout (default: 10000) |
@@ -185,6 +186,22 @@ capiscio validate https://agent.com --test-live --strict --json
 - **Conservative**: Minimal validation for development and testing environments
 
 **Registry Ready:** Use `--registry-ready` for strict validation optimized for agent registry deployment.
+
+### Three-Dimensional Scoring
+
+Capiscio CLI provides detailed quality scoring across three independent dimensions:
+
+```bash
+# Show detailed scoring breakdown
+capiscio validate agent.json --detailed-scores
+```
+
+**Three Quality Dimensions:**
+- **Spec Compliance (0-100)** - How well does the agent conform to A2A v0.3.0?
+- **Trust (0-100)** - How trustworthy and secure is this agent? (includes confidence multiplier)
+- **Availability (0-100)** - Is the endpoint operational? (requires `--test-live`)
+
+Each score includes a detailed breakdown showing exactly what contributed to the result. **Learn more:** [Scoring System Documentation](docs/scoring-system.md)
 
 ## Why Use Capiscio CLI?
 
