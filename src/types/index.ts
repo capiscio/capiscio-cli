@@ -111,6 +111,7 @@ export interface ValidationResult {
   validations: ValidationCheck[];
   versionInfo?: VersionValidationInfo;
   liveTest?: LiveTestResult;
+  scoringResult?: any; // Will be typed as ScoringResult from scoring module
 }
 
 export interface LiveTestResult {
@@ -213,6 +214,7 @@ export interface CLIOptions {
   schemaOnly?: boolean;
   skipSignature?: boolean;
   testLive?: boolean;
+  detailedScores?: boolean;
   json?: boolean;
   junit?: boolean;
   sarif?: boolean;

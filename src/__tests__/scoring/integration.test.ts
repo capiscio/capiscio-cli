@@ -129,9 +129,11 @@ describe('Scoring System Integration', () => {
       context
     );
 
-    expect(result.legacyScore).toBeDefined();
-    expect(result.legacyScore).toBeGreaterThan(0);
-    expect(result.legacyScore).toBeLessThanOrEqual(100);
+    // Verify all three scores are present
+    expect(result.compliance).toBeDefined();
+    expect(result.trust).toBeDefined();
+    expect(result.availability).toBeDefined();
+    expect(result.recommendation).toBeDefined();
   });
 
   it('should generate appropriate recommendations', () => {

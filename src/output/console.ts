@@ -40,7 +40,13 @@ export class ConsoleOutput {
     
     console.log(status);
     console.log(chalk.gray(`Agent: ${input}`));
-    console.log(chalk.gray(`Score: ${result.score}/100`));
+    
+    // Display scoring results if available and detailed
+    if (result.scoringResult) {
+      this.displayDetailedScores(result.scoringResult);
+    } else {
+      console.log(chalk.gray(`Score: ${result.score}/100`));
+    }
     
     if (result.versionInfo) {
       const version = result.versionInfo.detectedVersion || 'undefined';
@@ -160,6 +166,66 @@ export class ConsoleOutput {
       }
     });
     console.log();
+  }
+
+  private displayDetailedScores(scoringResult: any): void {
+    console.log();
+    console.log(chalk.cyan.bold('📊 SCORING BREAKDOWN:'));
+    console.log();
+    
+    // Compliance Score
+    const complianceColor = this.getScoreColor(scoringResult.compliance.total);
+    console.log(complianceColor(`  ✓ Spec Compliance: ${scoringResult.compliance.total}/100 ${scoringResult.compliance.rating}`));
+    console.log(chalk.gray(`    └─ Core Fields:       ${scoringResult.compliance.breakdown.coreFields.score}/60`));
+    console.log(chalk.gray(`    └─ Skills Quality:    ${scoringResult.compliance.breakdown.skillsQuality.score}/20`));
+    console.log(chalk.gray(`    └─ Format:            ${scoringResult.compliance.breakdown.formatCompliance.score}/15`));
+    console.log(chalk.gray(`    └─ Data Quality:      ${scoringResult.compliance.breakdown.dataQuality.score}/5`));
+    
+    // Trust Score
+    const trustColor = this.getScoreColor(scoringResult.trust.total);
+    console.log();
+    console.log(trustColor(`  ✓ Trust: ${scoringResult.trust.total}/100 ${scoringResult.trust.rating}`));
+    if (scoringResult.trust.confidenceMultiplier < 1.0) {
+      console.log(chalk.yellow(`    ⚠️  Confidence: ${scoringResult.trust.confidenceMultiplier}x (Raw: ${scoringResult.trust.rawScore})`));
+    }
+    console.log(chalk.gray(`    └─ Signatures:        ${scoringResult.trust.breakdown.signatures.score}/40 ${scoringResult.trust.breakdown.signatures.tested ? '' : '(Not Tested)'}`));
+    console.log(chalk.gray(`    └─ Provider:          ${scoringResult.trust.breakdown.provider.score}/25`));
+    console.log(chalk.gray(`    └─ Security:          ${scoringResult.trust.breakdown.security.score}/20`));
+    console.log(chalk.gray(`    └─ Documentation:     ${scoringResult.trust.breakdown.documentation.score}/15`));
+    
+    // Availability Score
+    console.log();
+    if (scoringResult.availability.tested && scoringResult.availability.total !== null) {
+      const availColor = this.getScoreColor(scoringResult.availability.total);
+      console.log(availColor(`  ✓ Availability: ${scoringResult.availability.total}/100 ${scoringResult.availability.rating}`));
+      console.log(chalk.gray(`    └─ Primary Endpoint:  ${scoringResult.availability.breakdown.primaryEndpoint.score}/50`));
+      console.log(chalk.gray(`    └─ Transport Support: ${scoringResult.availability.breakdown.transportSupport.score}/30`));
+      console.log(chalk.gray(`    └─ Response Quality:  ${scoringResult.availability.breakdown.responseQuality.score}/20`));
+    } else {
+      console.log(chalk.gray(`  ⏭️  Availability: Not Tested`));
+      if (scoringResult.availability.notTestedReason) {
+        console.log(chalk.gray(`    └─ ${scoringResult.availability.notTestedReason}`));
+      }
+    }
+    
+    // Recommendation
+    if (scoringResult.recommendation) {
+      console.log();
+      console.log(chalk.blue.bold('💡 RECOMMENDATION:'));
+      const recommendations = scoringResult.recommendation.split('\n');
+      recommendations.forEach((rec: string) => {
+        console.log(`  ${rec}`);
+      });
+    }
+    
+    console.log();
+  }
+  
+  private getScoreColor(score: number): typeof chalk.green {
+    if (score >= 90) return chalk.green;
+    if (score >= 75) return chalk.yellow;
+    if (score >= 60) return chalk.magenta;
+    return chalk.red;
   }
 
   private displayNextSteps(result: ValidationResult): void {

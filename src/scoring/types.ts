@@ -252,8 +252,6 @@ export interface ScoringResult {
   availability: AvailabilityScore;
   /** Overall recommendation based on all scores */
   recommendation: string;
-  /** Legacy single score for backward compatibility */
-  legacyScore?: number;
 }
 
 // ============================================================================

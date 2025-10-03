@@ -64,15 +64,11 @@ export function calculateScores(
   // Generate overall recommendation
   const recommendation = generateRecommendation(compliance, trust, availability);
 
-  // Calculate legacy score for backward compatibility
-  const legacyScore = calculateLegacyScore(compliance, trust, availability);
-
   return {
     compliance,
     trust,
     availability,
     recommendation,
-    legacyScore,
   };
 }
 
@@ -157,44 +153,6 @@ function generateRecommendation(
   }
 
   return recommendations.join('\n');
-}
-
-/**
- * Calculate legacy single score for backward compatibility
- * 
- * This uses a weighted average:
- * - Compliance: 50% weight (most important for interoperability)
- * - Trust: 30% weight
- * - Availability: 20% weight (if tested, otherwise redistribute)
- */
-function calculateLegacyScore(
-  compliance: ScoringResult['compliance'],
-  trust: ScoringResult['trust'],
-  availability: ScoringResult['availability']
-): number {
-  let totalWeight = 0;
-  let weightedSum = 0;
-
-  // Compliance (50% weight)
-  weightedSum += compliance.total * 0.5;
-  totalWeight += 0.5;
-
-  // Trust (30% weight)
-  weightedSum += trust.total * 0.3;
-  totalWeight += 0.3;
-
-  // Availability (20% weight if tested, otherwise redistribute to compliance)
-  if (availability.tested && availability.total !== null) {
-    weightedSum += availability.total * 0.2;
-    totalWeight += 0.2;
-  } else {
-    // Redistribute availability weight to compliance
-    weightedSum += compliance.total * 0.2;
-    totalWeight += 0.2;
-  }
-
-  const legacyScore = weightedSum / totalWeight;
-  return Math.round(legacyScore * 100) / 100;
 }
 
 /**
