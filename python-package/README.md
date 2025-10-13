@@ -1,8 +1,8 @@
-# Capiscio CLI - A2A Protocol Validator
+# CapiscIO CLI - A2A Protocol Validator
 
 > **Validator & A2A Protocol Compliance CLI** | The only CLI that actually tests AI agent transport protocols. Validate agent-card.json files, A2A compliance across JSONRPC, GRPC, and REST with live endpoint testing.
 
-🌐 **[Learn more about Capiscio](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
+🌐 **[Learn more about CapiscIO](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
 
 [![PyPI version](https://badge.fury.io/py/capiscio.svg)](https://badge.fury.io/py/capiscio)
 [![Downloads](https://img.shields.io/pypi/dm/capiscio)](https://pypi.org/project/capiscio/)
@@ -94,7 +94,7 @@ capiscio validate https://agent.com --errors-only    # Show only problems
 
 ### Three-Dimensional Scoring
 
-Capiscio CLI automatically provides detailed quality scoring across three independent dimensions:
+CapiscIO CLI automatically provides detailed quality scoring across three independent dimensions:
 
 ```bash
 # Scoring is shown by default
@@ -158,15 +158,15 @@ capiscio validate https://agent.com --test-live --strict --json
 - **Security** - Prevent malicious agent card injection
 - **Compliance** - Meet security requirements for production deployments
 
-## Why Use Capiscio CLI?
+## Why Use CapiscIO CLI?
 
 **Catch Integration Issues Before Production:**
 - ❌ Schema validators miss broken JSONRPC endpoints  
 - ❌ Manual testing doesn't cover all transport protocols
 - ❌ Integration failures happen at runtime
 - ❌ Unsigned agent cards can't be trusted
-- ✅ **Capiscio tests actual connectivity and protocol compliance**
-- ✅ **Capiscio verifies cryptographic signatures for authenticity**
+- ✅ **CapiscIO tests actual connectivity and protocol compliance**
+- ✅ **CapiscIO verifies cryptographic signatures for authenticity**
 
 **Real Problems This Solves:**
 - JSONRPC methods return wrong error codes
@@ -177,7 +177,7 @@ capiscio validate https://agent.com --test-live --strict --json
 
 ## Transport Protocol Testing
 
-Unlike basic schema validators, Capiscio CLI actually tests your agent endpoints:
+Unlike basic schema validators, CapiscIO CLI actually tests your agent endpoints:
 
 - **JSONRPC** - Validates JSON-RPC 2.0 compliance and connectivity
 - **GRPC** - Tests gRPC endpoint accessibility

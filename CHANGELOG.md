@@ -137,7 +137,7 @@ Since there were no users of version 1.x in production, this breaking change has
 ## [1.0.0] - 2025-09-18
 
 ### Added
-- Initial release of Capiscio CLI
+- Initial release of CapiscIO CLI
 - A2A protocol validation for agent cards
 - Support for A2A protocol v0.3.0
 - Multiple validation modes (progressive, strict, conservative)
@@ -234,7 +234,7 @@ Since there were no users of version 1.x in production, this breaking change has
 
 ### 1.0.0 - Initial Release
 
-This is the first public release of Capiscio CLI, extracted from the Capiscio monorepo to provide a standalone, performant validation tool for the A2A protocol community.
+This is the first public release of CapiscIO CLI, extracted from the CapiscIO monorepo to provide a standalone, performant validation tool for the A2A protocol community.
 
 **Key Highlights:**
 - Complete A2A v0.3.0 protocol validation
@@ -245,7 +245,7 @@ This is the first public release of Capiscio CLI, extracted from the Capiscio mo
 - Intelligent agent card discovery and legacy endpoint support
 
 **Migration from Monorepo:**
-This CLI represents a strategic extraction from the larger Capiscio platform to provide a focused, high-performance tool that can serve as the foundation for future CI plugins and SDKs.
+This CLI represents a strategic extraction from the larger CapiscIO platform to provide a focused, high-performance tool that can serve as the foundation for future CI plugins and SDKs.
 
 **Community Ready:**
 The CLI is designed for community adoption with comprehensive documentation, contributing guidelines, and a clear API for programmatic usage.

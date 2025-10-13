@@ -1,8 +1,8 @@
-# Capiscio CLI - A2A Protocol Validator
+# CapiscIO CLI - A2A Protocol Validator
 
 > **Comprehensive validation for AI agent trust and protocol compliance** | Beyond schema validation - test cryptographic authenticity and live protocol functionality.
 
-🌐 **[Learn more about Capiscio](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
+🌐 **[Learn more about CapiscIO](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
 
 [![npm version](https://badge.fury.io/js/capiscio-cli.svg)](https://badge.fury.io/js/capiscio-cli)
 [![Downloads](https://img.shields.io/npm/dm/capiscio-cli)](https://www.npmjs.com/package/capiscio-cli)
@@ -24,7 +24,7 @@
 - **📋 Specification compliance** - subtle A2A protocol violations
 - **❌ Schema vs reality** - valid JSON but broken functionality
 
-### How Capiscio Helps:
+### How CapiscIO Helps:
 - **🔒 JWS signature verification** - cryptographically verify agent authenticity
 - **🌐 Live endpoint testing** - catch broken protocols before deployment
 - **⚡ Zero-dependency validation** - no npm vulnerabilities or Python conflicts
@@ -105,7 +105,7 @@ Expand-Archive -Path capiscio-win-x64.zip -DestinationPath .
 
 ## Key Features
 
-- **🔐 Two-Layer Validation** - ONLY Capiscio validates both cryptographic trust AND protocol compliance
+- **🔐 Two-Layer Validation** - ONLY CapiscIO validates both cryptographic trust AND protocol compliance
 - **✅ JWS Signature Verification** - Cryptographic validation of agent authenticity (RFC 7515 compliant)
 - **🚀 Live Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints (not just schemas)
 - **⚡ Zero Dependencies** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
@@ -188,7 +188,7 @@ capiscio validate https://agent.com --test-live --strict --json
 
 ### Three-Dimensional Scoring
 
-Capiscio CLI automatically provides detailed quality scoring across three independent dimensions:
+CapiscIO CLI automatically provides detailed quality scoring across three independent dimensions:
 
 ```bash
 # Scoring is shown by default
@@ -202,7 +202,7 @@ capiscio validate agent.json
 
 Each score includes a detailed breakdown showing exactly what contributed to the result. **Learn more:** [Scoring System Documentation](docs/scoring-system.md)
 
-## Why Use Capiscio CLI?
+## Why Use CapiscIO CLI?
 
 **Stop Integration Disasters Before They Happen:**
 
@@ -214,7 +214,7 @@ Each score includes a detailed breakdown showing exactly what contributed to the
 - **Tampered agent cards** - man-in-the-middle attacks succeed
 - **Production failures cascade** - one bad agent brings down your system
 
-### ✅ Capiscio Prevents These Failures
+### ✅ CapiscIO Prevents These Failures
 - **JWS signature verification** - cryptographically prove agent authenticity  
 - **Live endpoint connectivity testing** - catch broken protocols before deployment
 - **A2A protocol compliance validation** - prevent specification violations
@@ -225,7 +225,7 @@ Each score includes a detailed breakdown showing exactly what contributed to the
 
 ## Transport Protocol Testing & Security
 
-Unlike basic schema validators, Capiscio CLI actually tests your agent endpoints and verifies cryptographic signatures:
+Unlike basic schema validators, CapiscIO CLI actually tests your agent endpoints and verifies cryptographic signatures:
 
 - **JSONRPC** - Validates JSON-RPC 2.0 compliance and connectivity
 - **GRPC** - Tests gRPC endpoint accessibility
@@ -237,7 +237,7 @@ Perfect for testing your own agents and evaluating third-party agents before int
 
 ## Signature Verification (New in v1.2.0)
 
-Capiscio CLI now includes **secure by default** JWS signature verification for agent cards:
+CapiscIO CLI now includes **secure by default** JWS signature verification for agent cards:
 
 ### 🔐 Cryptographic Validation
 - **RFC 7515 compliant** JWS (JSON Web Signature) verification
@@ -302,7 +302,7 @@ A: Current spec uses `agent-card.json`. We also support legacy `agent.json` file
 
 ## License
 
-MIT © [Capiscio](https://capisc.io)
+MIT © [CapiscIO](https://capisc.io)
 
 ---
 

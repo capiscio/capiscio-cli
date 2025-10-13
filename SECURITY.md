@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We provide security updates for the following versions of Capiscio CLI:
+We provide security updates for the following versions of CapiscIO CLI:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -10,7 +10,7 @@ We provide security updates for the following versions of Capiscio CLI:
 
 ## Reporting a Vulnerability
 
-We take the security of Capiscio CLI seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of CapiscIO CLI seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
 ### How to Report
 
@@ -34,7 +34,7 @@ Please include the following information in your report:
 
 ### Security Considerations
 
-Capiscio CLI is designed with security in mind:
+CapiscIO CLI is designed with security in mind:
 
 #### Network Security
 - Uses HTTPS by default for all remote requests
@@ -85,9 +85,9 @@ We believe in giving credit to security researchers who help make our software s
 
 ## Security Best Practices for Users
 
-### When Using Capiscio CLI
+### When Using CapiscIO CLI
 
-1. **Keep Updated**: Always use the latest version of Capiscio CLI
+1. **Keep Updated**: Always use the latest version of CapiscIO CLI
 2. **Verify Sources**: Only validate agent cards from trusted sources
 3. **Network Security**: Be cautious when validating URLs from untrusted sources
 4. **File Permissions**: Ensure proper file permissions on agent card files
@@ -111,7 +111,7 @@ We believe in giving credit to security researchers who help make our software s
 
 This security policy applies to:
 
-- The Capiscio CLI codebase
+- The CapiscIO CLI codebase
 - npm package distribution
 - GitHub repository and releases
 - Documentation and examples
@@ -142,4 +142,4 @@ By reporting security vulnerabilities, you agree that:
 
 ---
 
-Thank you for helping keep Capiscio CLI and our users safe!\n
+Thank you for helping keep CapiscIO CLI and our users safe!\n

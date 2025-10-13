@@ -19,7 +19,7 @@
   "bugs": {
     "url": "https://github.com/capiscio/capiscio-cli/issues"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Capiscio Team",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

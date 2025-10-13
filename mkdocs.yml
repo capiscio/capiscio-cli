@@ -1,0 +1,82 @@
+# CapiscIO CLI Documentation
+# Can be built standalone or included in unified docs
+
+site_name: capiscio-cli
+site_url: https://docs.capisc.io/capiscio-cli
+site_description: Command-line validation tool for A2A protocol agent cards
+site_author: CapiscIO Team
+
+# Only used in standalone mode
+repo_name: capiscio/capiscio-cli
+repo_url: https://github.com/capiscio/capiscio-cli
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue grey
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  
+  font:
+    text: Roboto
+    code: Roboto Mono
+  
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search:
+      lang: en
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+
+# Navigation for CLI docs
+nav:
+  - Overview: README.md
+  - Validation Process: validation-process.md
+  - Scoring System: scoring-system.md
+  - Architecture: architecture.md
+  - API Reference: api-reference.md
+
+# Extra configuration
+extra:
+  homepage: https://docs.capisc.io
+  
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/capiscio/capiscio-cli
+    - icon: fontawesome/brands/npm
+      link: https://www.npmjs.com/package/capiscio-cli

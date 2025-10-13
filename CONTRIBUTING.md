@@ -1,6 +1,6 @@
-# Contributing to Capiscio CLI
+# Contributing to CapiscIO CLI
 
-Thank you for your interest in contributing to Capiscio CLI! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to CapiscIO CLI! This document provides guidelines and information for contributors.
 
 ## 🚀 Quick Start
 
