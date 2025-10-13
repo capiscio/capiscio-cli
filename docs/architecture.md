@@ -1,10 +1,20 @@
-# Architecture Documentation
+# 🏛️ Architecture Documentation
 
-> Internal architecture and design decisions for Capiscio CLI
+> **Internal architecture and design decisions for CapiscIO CLI**
 
-This document outlines the internal architecture, design patterns, and technical decisions behind the Capiscio CLI validation system.
+## Design Philosophy
 
-## Table of Contents
+**Core Principles:**
+
+- ✅ **Zero External Dependencies**: No reliance on external validator services
+- ✅ **Modularity**: Clean separation of concerns for easy maintenance
+- ✅ **Extensibility**: Simple to add new validation rules
+- ✅ **Performance**: Efficient validation with minimal overhead
+- ✅ **Reliability**: Comprehensive error handling and graceful degradation
+
+This document outlines the internal architecture, design patterns, and technical decisions behind the CapiscIO CLI validation system.
+
+## 📚 Table of Contents
 
 - [Overview](#overview)
 - [Core Components](#core-components)
@@ -16,7 +26,7 @@ This document outlines the internal architecture, design patterns, and technical
 
 ## Overview
 
-The Capiscio CLI is designed as a self-contained, performant validation tool for A2A protocol agent cards. The architecture prioritizes:
+The CapiscIO CLI is designed as a self-contained, performant validation tool for A2A protocol agent cards. The architecture prioritizes:
 
 - **Zero External Dependencies**: No reliance on external validator services
 - **Modularity**: Clean separation of concerns
@@ -28,32 +38,27 @@ The Capiscio CLI is designed as a self-contained, performant validation tool for
 
 ### Component Diagram
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CLI Layer     │    │  Commands       │    │   Output        │
-│                 │    │                 │    │                 │
-│ • cli.ts        │───▶│ • validate.ts   │───▶│ • console.ts    │
-│ • Command       │    │ • ValidateCmd   │    │ • json.ts       │
-│   Registration  │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Utilities     │    │   Validator     │    │   HTTP Client   │
-│                 │    │                 │    │                 │
-│ • file-utils.ts │◀───│ • a2a-validator │───▶│ • http-client   │
-│ • semver.ts     │    │   .ts           │    │   .ts           │
-│                 │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        Type System                              │
-│                                                                 │
-│ • AgentCard          • ValidationResult     • HttpClient       │
-│ • ValidationOptions  • ValidationError      • CLIOptions       │
-│ • TransportProtocol  • ValidationWarning    • And more...      │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    CLI[CLI Layer<br/>cli.ts<br/>Command Registration]
+    CMD[Commands<br/>validate.ts<br/>ValidateCmd]
+    OUT[Output<br/>console.ts<br/>json.ts]
+    
+    UTIL[Utilities<br/>file-utils.ts<br/>semver.ts]
+    VAL[Validator<br/>a2a-validator.ts]
+    HTTP[HTTP Client<br/>http-client.ts]
+    
+    TYPES[Type System<br/>AgentCard, ValidationResult<br/>ValidationOptions, ValidationError<br/>TransportProtocol, CLIOptions]
+    
+    CLI --> CMD
+    CMD --> OUT
+    CMD --> VAL
+    VAL --> UTIL
+    VAL --> HTTP
+    CLI -.-> TYPES
+    CMD -.-> TYPES
+    VAL -.-> TYPES
+    OUT -.-> TYPES
 ```
 
 ### Layer Responsibilities
@@ -95,55 +100,23 @@ The Capiscio CLI is designed as a self-contained, performant validation tool for
 
 ### Validation Flow Diagram
 
-```
-┌─────────────┐
-│   User      │
-│   Input     │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Command    │
-│  Parser     │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐    ┌─────────────┐
-│  Input      │───▶│  File or    │
-│  Resolution │    │  URL        │
-└──────┬──────┘    │  Detection  │
-       │           └─────────────┘
-       ▼
-┌─────────────┐
-│ A2A         │
-│ Validator   │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│  Schema     │    │  Version    │    │  Network    │
-│  Validation │    │  Compat     │    │  Testing    │
-└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
-       │                  │                  │
-       └──────────────────┼──────────────────┘
-                          │
-                          ▼
-                ┌─────────────┐
-                │ Validation  │
-                │ Result      │
-                └──────┬──────┘
-                       │
-                       ▼
-                ┌─────────────┐
-                │ Output      │
-                │ Formatter   │
-                └──────┬──────┘
-                       │
-                       ▼
-                ┌─────────────┐
-                │ Console or  │
-                │ JSON Output │
-                └─────────────┘
+```mermaid
+graph TB
+    USER[User Input] --> PARSE[Command Parser]
+    PARSE --> RESOLVE[Input Resolution<br/>File or URL Detection]
+    RESOLVE --> LOAD[Load Agent Card Data]
+    LOAD --> VALIDATOR[A2A Validator]
+    
+    VALIDATOR --> SCHEMA[Schema Validation]
+    VALIDATOR --> VERSION[Version Compatibility]
+    VALIDATOR --> NETWORK[Network Testing]
+    
+    SCHEMA --> RESULT[Validation Result]
+    VERSION --> RESULT
+    NETWORK --> RESULT
+    
+    RESULT --> FORMATTER[Output Formatter]
+    FORMATTER --> OUTPUT[Console or JSON Output]
 ```
 
 ### Processing Pipeline
@@ -441,6 +414,16 @@ tests/
 4. **Mock Strategy**: HTTP client mocking for network tests
 
 ---
+
+## See Also
+
+- **[Validation Process](validation-process.md)** - What gets validated
+- **[Scoring System](scoring-system.md)** - How validation results become scores
+- **[API Reference](api-reference.md)** - Public API surface
+- **[GitHub Repository](https://github.com/capiscio/capiscio-cli)** - Extend the validator
+
+!!! tip "Building an Agent?"
+    This document is for extending capiscio-cli. If you're building an A2A agent, see [CapiscIO A2A Security](../../a2a-security/) for runtime protection.
 
 ## Maintenance & Evolution
 

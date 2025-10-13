@@ -1,20 +1,23 @@
-# Three-Dimensional Scoring System
+# Using Scoring in the CLI
 
-> **Beyond pass/fail** - Understand exactly where your agent excels and where it needs improvement
+> **Learn how to use the three-dimensional scoring system with CapiscIO CLI** - For the full scoring system reference, see the [**Unified Scoring Guide**](https://docs.capisc.io/guides/scoring-system/)
 
-The Capiscio CLI uses a sophisticated three-dimensional scoring system that evaluates agents across three independent quality dimensions. Unlike a single aggregate score that obscures specific issues, our system clearly shows whether problems lie in specification compliance, trustworthiness, or operational availability.
+## Quick Overview
 
-## Overview
+CapiscIO CLI uses a three-dimensional scoring system to evaluate agent cards:
 
-Every agent receives three independent scores:
+- **📄 Compliance (0-100)** - Protocol adherence and format validation
+- **🔐 Trust (0-100)** - Security practices and cryptographic verification  
+- **🚀 Availability (0-100)** - Operational readiness *(optional with `--test-live`)*
 
-1. **Spec Compliance (0-100)** - How well does the agent card conform to the A2A v0.3.0 specification?
-2. **Trust (0-100)** - How trustworthy and secure is this agent?
-3. **Availability (0-100)** - How operational and reliable is the endpoint? *(Only with `--test-live`)*
+!!! tip "Complete Scoring Details"
+    This page focuses on **CLI usage**. For the complete scoring system explanation, breakdowns, and calculations, see the [**Unified Scoring Guide**](https://docs.capisc.io/guides/scoring-system/).
 
-Each score has a detailed breakdown showing exactly what contributed to the final value.
+---
 
-## Using Detailed Scores
+## Basic Usage
+
+### Viewing Scores
 
 Add the `--detailed-scores` flag to any validation command:
 
@@ -22,10 +25,10 @@ Add the `--detailed-scores` flag to any validation command:
 # Show detailed scoring breakdown
 capiscio validate agent-card.json --detailed-scores
 
-# Combine with live testing
+# Combine with live testing for availability scores
 capiscio validate https://agent.example.com --detailed-scores --test-live
 
-# JSON output with scoring
+# JSON output with full scoring details
 capiscio validate agent-card.json --detailed-scores --json
 ```
 
@@ -40,7 +43,7 @@ capiscio validate agent-card.json --detailed-scores --json
     └─ Format:            15/15
     └─ Data Quality:      5/5
 
-  ✓ Trust: 24/100 Low Trust
+  ✓ Trust: 24/100 Moderately Trusted
     ⚠️  Confidence: 0.6x (Raw: 40)
     └─ Signatures:        0/40
     └─ Provider:          20/25
@@ -56,294 +59,307 @@ capiscio validate agent-card.json --detailed-scores --json
   ⚠️ Not yet production ready - improve: trust
 ```
 
-## Score 1: Spec Compliance (100 points)
+---
 
-**What it measures:** How well the agent card adheres to the A2A v0.3.0 specification.
+## JSON Output Format
 
-### Breakdown (60/20/15/5 weighting)
-
-#### Core Fields (60 points)
-Checks for presence of all 9 required A2A fields:
-- `protocolVersion` (6.67 points)
-- `name` (6.67 points)
-- `description` (6.67 points)
-- `url` (6.67 points)
-- `version` (6.67 points)
-- `capabilities` (6.67 points)
-- `defaultInputModes` (6.67 points)
-- `defaultOutputModes` (6.67 points)
-- `skills` (6.67 points)
-
-**Each missing field costs you 6.67 points.**
-
-#### Skills Quality (20 points)
-Evaluates the quality of your skills array:
-- **Skills present** (10 points) - At least one skill defined
-- **Required fields** (5 points) - All skills have `id`, `name`, `description`
-- **Tags present** (5 points) - All skills have at least one tag
-
-**Penalty:** -2 points per skill with missing required fields, -1 point per skill without tags
-
-#### Format Compliance (15 points)
-Validates proper formatting:
-- **Valid semver** (3 points) - `version` follows semantic versioning (e.g., `1.0.0`)
-- **Valid protocol version** (3 points) - `protocolVersion` is `0.3.0`
-- **Valid URL** (3 points) - `url` is a proper HTTPS URL
-- **Valid transports** (3 points) - Transport protocols are `JSONRPC`, `GRPC`, or `HTTP+JSON`
-- **Valid MIME types** (3 points) - Input/output modes are valid MIME types
-
-**Penalty:** -10 points for bad MIME types (security risk)
-
-#### Data Quality (5 points)
-Checks for data integrity:
-- **No duplicate skill IDs** (2 points) - Each skill has a unique identifier
-- **Field lengths valid** (2 points) - Names, descriptions within reasonable limits
-- **No SSRF risks** (1 point) - URLs don't point to internal/private networks
-
-### Rating Levels
-- **100**: Perfect
-- **90-99**: Excellent
-- **75-89**: Good
-- **60-74**: Fair
-- **<60**: Poor
-
-### Common Issues
-- ❌ Missing required fields like `protocolVersion` or `capabilities`
-- ❌ Skills without tags (reduces discoverability)
-- ❌ Invalid MIME types in input/output modes
-- ❌ Using HTTP instead of HTTPS for URLs
-- ❌ Invalid semantic version strings
-
-## Score 2: Trust (100 points + multiplier)
-
-**What it measures:** How trustworthy and secure is this agent? Can users verify its authenticity?
-
-### The Trust Confidence Multiplier 🔑
-
-**This is revolutionary:** The presence and validity of cryptographic signatures affects ALL trust claims via a confidence multiplier:
-
-- **Valid JWS signature**: 1.0x multiplier (full trust)
-- **No signature**: 0.6x multiplier (unverified claims)
-- **Invalid signature**: 0.4x multiplier (active distrust)
-
-**Why this matters:** An agent claiming strong security without signatures gets reduced trust. This prevents "trust washing" where agents make security claims they can't prove.
-
-### Breakdown (40/25/20/15 weighting)
-
-#### Signatures (40 points + confidence key)
-The foundation of trust:
-- **Valid signature present** (30 points)
-- **Multiple signatures** (+3 points) - Redundant verification
-- **Comprehensive coverage** (+4 points) - Signature covers all fields
-- **Recent signature** (+3 points) - Signed within last 90 days
-
-**Penalties:**
-- **Invalid signature** (-15 points + 0.4x multiplier) - Worse than no signature
-- **Expired signature** (-10 points + 0.6x multiplier)
-
-#### Provider Information (25 points)
-Who is behind this agent?
-- **Organization specified** (10 points) - `provider.organization` present
-- **Provider URL** (10 points) - `provider.url` present and HTTPS
-- **URL reachable** (+5 bonus) - Provider website responds *(requires `--test-live`)*
-
-#### Security Practices (20 points)
-How secure is the implementation?
-- **HTTPS-only endpoints** (10 points) - All URLs use HTTPS
-- **Security schemes declared** (5 points) - `securitySchemes` defined
-- **Strong authentication** (5 points) - OAuth2, OpenID Connect, or similar
-
-**Penalty:** -10 points for any HTTP URLs (security risk)
-
-#### Documentation (15 points)
-Transparency and user support:
-- **Documentation URL** (5 points) - `documentationUrl` provided
-- **Terms of Service** (5 points) - `termsOfServiceUrl` provided
-- **Privacy Policy** (5 points) - `privacyPolicyUrl` provided
-
-### Rating Levels
-- **80-100**: Highly Trusted
-- **60-79**: Trusted
-- **40-59**: Moderate Trust
-- **20-39**: Low Trust
-- **<20**: Untrusted
-
-### Example: Confidence Multiplier in Action
-
-**Scenario:** Agent card claims strong security (OAuth2, HTTPS-only) = 40 raw points
-
-- **With valid signature**: 40 × 1.0 = **40 points** ✅
-- **Without signature**: 40 × 0.6 = **24 points** ⚠️ (Same claims, less trustworthy)
-- **Invalid signature**: 40 × 0.4 = **16 points** ❌ (Active red flag)
-
-### Common Issues
-- ❌ No cryptographic signatures (reduces trust by 40%)
-- ❌ Missing provider information
-- ❌ No documentation or privacy policy URLs
-- ❌ Using HTTP instead of HTTPS
-- ❌ No security schemes declared
-
-## Score 3: Availability (100 points)
-
-**What it measures:** Is the agent operationally available and responding correctly?
-
-**Important:** This score is only calculated with the `--test-live` flag. Without it, you'll see "Not Tested".
-
-### Breakdown (50/30/20 weighting)
-
-#### Primary Endpoint (50 points)
-Can we reach your agent?
-- **Endpoint responds** (30 points) - Returns a valid response
-- **Fast response** (10 points) - Responds in under 3 seconds
-- **CORS configured** (5 points) - Proper CORS headers for web access
-- **Valid TLS certificate** (5 points) - HTTPS certificate is valid and trusted
-
-#### Transport Support (30 points)
-Are the declared transports working?
-- **Preferred transport works** (20 points) - Primary protocol responds correctly
-- **Additional interfaces** (10 points) - Alternative transports also functional
-
-#### Response Quality (20 points)
-How well-formed are the responses?
-- **Valid A2A structure** (10 points) - Responses follow A2A message format
-- **Proper content-type** (5 points) - Correct HTTP headers
-- **Error handling** (5 points) - Graceful error responses
-
-### Rating Levels
-- **95-100**: Fully Available
-- **80-94**: Available
-- **60-79**: Degraded
-- **40-59**: Unstable
-- **<40**: Unavailable
-
-### Common Issues
-- ❌ Endpoint timeouts (> 3 seconds)
-- ❌ Connection refused or DNS errors
-- ❌ Invalid TLS certificates
-- ❌ Missing or incorrect CORS headers
-- ❌ Responses not following A2A message structure
-- ❌ Declared transports returning errors
-
-## Production Readiness
-
-The system automatically determines if an agent is "production ready" based on these thresholds:
-
-- **Compliance ≥ 95** - Nearly perfect spec adherence
-- **Trust ≥ 60** - Moderate trust or better
-- **Availability ≥ 80** - Available or better *(if tested)*
-
-Agents meeting all thresholds receive a "✅ Production ready" recommendation.
-
-## Recommendations
-
-After scoring, you'll receive actionable recommendations:
-
-- **Perfect compliance?** "✅ Fully A2A v0.3.0 compliant"
-- **Good but no signatures?** "⚠️ No cryptographic signatures - consider adding JWS signatures"
-- **Poor compliance?** "❌ Poor compliance - significant improvements needed"
-- **Not production ready?** "⚠️ Not yet production ready - improve: compliance, trust"
-
-## JSON Output
-
-The full scoring breakdown is available in JSON format:
-
-```bash
-capiscio validate agent.json --detailed-scores --json
-```
+When using `--json` with `--detailed-scores`, the output includes full scoring details:
 
 ```json
 {
-  "scoringResult": {
+  "valid": true,
+  "version": "0.3.0",
+  "scores": {
     "compliance": {
       "total": 100,
-      "rating": "Perfect",
+      "rating": "PERFECT",
       "breakdown": {
-        "coreFields": {
-          "score": 60,
-          "maxScore": 60,
-          "details": {
-            "present": ["protocolVersion", "name", "..."],
-            "missing": []
-          }
-        },
-        "skillsQuality": { "score": 20, "maxScore": 20, "..." },
-        "formatCompliance": { "score": 15, "maxScore": 15, "..." },
-        "dataQuality": { "score": 5, "maxScore": 5, "..." }
-      },
-      "issues": []
+        "coreFields": {"score": 60, "maxScore": 60, "issues": []},
+        "skillsQuality": {"score": 20, "maxScore": 20, "issues": []},
+        "formatCompliance": {"score": 15, "maxScore": 15, "issues": []},
+        "dataQuality": {"score": 5, "maxScore": 5, "issues": []}
+      }
     },
     "trust": {
       "total": 24,
-      "rawScore": 40,
+      "rating": "MODERATELY_TRUSTED",
       "confidenceMultiplier": 0.6,
-      "rating": "Low Trust",
-      "breakdown": { "..." },
-      "issues": [
-        "No valid cryptographic signatures - trust claims unverified",
-        "Trust confidence reduced (0.6x) - no cryptographic verification"
-      ]
+      "breakdown": {
+        "signatures": {"score": 0, "maxScore": 40, "issues": ["No signatures present"]},
+        "provider": {"score": 20, "maxScore": 25, "issues": []},
+        "security": {"score": 15, "maxScore": 20, "issues": []},
+        "documentation": {"score": 5, "maxScore": 15, "issues": ["Missing docs URL"]}
+      }
     },
-    "availability": {
-      "total": null,
-      "tested": false,
-      "notTestedReason": "Schema-only validation (use --test-live to test availability)"
-    },
-    "recommendation": "✅ Fully A2A v0.3.0 compliant\n⚠️ No cryptographic signatures..."
-  }
+    "availability": null
+  },
+  "recommendation": "Improve trust score by adding cryptographic signatures"
 }
 ```
 
-## Use Cases
+### Parsing JSON in Scripts
 
-### Development Workflow
 ```bash
-# Quick check during development (compliance only)
-capiscio validate agent.json --detailed-scores
+# Extract compliance score
+capiscio validate agent.json --detailed-scores --json | jq '.scores.compliance.total'
 
-# Add when ready to test security
-capiscio validate agent.json --detailed-scores --test-live
+# Check if production-ready (compliance >= 95, trust >= 60)
+COMPLIANCE=$(capiscio validate agent.json --detailed-scores --json | jq '.scores.compliance.total')
+TRUST=$(capiscio validate agent.json --detailed-scores --json | jq '.scores.trust.total')
+
+if [ "$COMPLIANCE" -ge 95 ] && [ "$TRUST" -ge 60 ]; then
+  echo "✅ Production ready"
+else
+  echo "⚠️  Not production ready"
+fi
+
+# Get all issues from trust breakdown
+capiscio validate agent.json --detailed-scores --json | \
+  jq '.scores.trust.breakdown | to_entries | .[] | select(.value.issues | length > 0) | {category: .key, issues: .value.issues}'
 ```
-
-### CI/CD Pipeline
-```bash
-# Fail build if compliance < 95 or trust < 60
-capiscio validate agent.json --detailed-scores --json > scores.json
-
-# Parse JSON and check thresholds in your pipeline
-```
-
-### Agent Registry
-```bash
-# Full scoring for registry submissions
-capiscio validate https://agent.com --detailed-scores --test-live --strict
-
-# Enforce production readiness for listing
-```
-
-### User-Facing Agent Discovery
-- Show compliance scores to help users find well-implemented agents
-- Display trust scores to help users assess risk
-- Show availability scores to indicate operational status
-
-## Best Practices
-
-1. **Always aim for 100/100 compliance** - It's achievable and ensures interoperability
-2. **Add cryptographic signatures** - Boosts trust from ~20-40 to ~60-90+
-3. **Test live before deploying** - Catch endpoint issues early
-4. **Monitor availability scores** - Set up alerts for degradation
-5. **Document everything** - Adding URLs to docs/ToS/privacy is easy points
-6. **Use HTTPS everywhere** - HTTP URLs cost points and reduce trust
-
-## Comparing to Legacy Systems
-
-**Old way:** Single score (0-100) that didn't tell you what was wrong
-
-**New way:** Three clear dimensions showing exactly where to improve
-
-**Example:**
-- Agent with score 45 - Is it insecure? Broken? Non-compliant? **Unknown.**
-- Agent with 100/24/85 - Perfect spec compliance, low trust (no signatures), good availability. **Actionable.**
 
 ---
 
-**Ready to improve your scores?** Run `capiscio validate --detailed-scores` to see where your agent stands!
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Validate Agent Card
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install CapiscIO CLI
+        run: npm install -g capiscio-cli
+      
+      - name: Validate with scoring
+        run: |
+          capiscio validate agent-card.json --detailed-scores --json > results.json
+          
+          # Extract scores
+          COMPLIANCE=$(jq '.scores.compliance.total' results.json)
+          TRUST=$(jq '.scores.trust.total' results.json)
+          
+          echo "📊 Compliance: $COMPLIANCE/100"
+          echo "🔐 Trust: $TRUST/100"
+          
+          # Fail if below thresholds
+          if [ "$COMPLIANCE" -lt 95 ] || [ "$TRUST" -lt 60 ]; then
+            echo "❌ Failed: Scores below production thresholds (Compliance >= 95, Trust >= 60)"
+            exit 1
+          fi
+          
+          echo "✅ Passed: Production-ready scores"
+```
+
+### GitLab CI Example
+
+```yaml
+validate-agent:
+  stage: test
+  image: node:18
+  script:
+    - npm install -g capiscio-cli
+    - capiscio validate agent-card.json --detailed-scores --json > results.json
+    - COMPLIANCE=$(jq '.scores.compliance.total' results.json)
+    - TRUST=$(jq '.scores.trust.total' results.json)
+    - |
+      if [ "$COMPLIANCE" -lt 95 ] || [ "$TRUST" -lt 60 ]; then
+        echo "❌ Scores below thresholds"
+        exit 1
+      fi
+  artifacts:
+    reports:
+      junit: results.json
+```
+
+---
+
+## Command Combinations
+
+### Validate Multiple Files
+
+```bash
+# Validate all agent cards with scoring
+for file in agents/*.json; do
+  echo "Validating $file..."
+  capiscio validate "$file" --detailed-scores
+done
+
+# Or use find
+find agents/ -name "*.json" -exec capiscio validate {} --detailed-scores \;
+```
+
+### Live Testing with Scoring
+
+```bash
+# Full validation with live endpoint testing
+capiscio validate https://agent.example.com --detailed-scores --test-live
+
+# Output shows all three dimensions:
+# - Compliance: Protocol adherence
+# - Trust: Security and signatures
+# - Availability: Endpoint health (from live test)
+```
+
+### Compare Agents
+
+```bash
+# Compare two agents side-by-side
+capiscio validate agent-a.json --detailed-scores --json > a.json
+capiscio validate agent-b.json --detailed-scores --json > b.json
+
+# Extract key metrics
+echo "Agent A - Compliance: $(jq '.scores.compliance.total' a.json), Trust: $(jq '.scores.trust.total' a.json)"
+echo "Agent B - Compliance: $(jq '.scores.compliance.total' b.json), Trust: $(jq '.scores.trust.total' b.json)"
+```
+
+---
+
+## Filtering by Score Thresholds
+
+### Only Show Low Scores
+
+```bash
+#!/bin/bash
+# validate-and-filter.sh - Only show agents below thresholds
+
+for file in agents/*.json; do
+  RESULT=$(capiscio validate "$file" --detailed-scores --json)
+  COMPLIANCE=$(echo "$RESULT" | jq '.scores.compliance.total')
+  TRUST=$(echo "$RESULT" | jq '.scores.trust.total')
+  
+  if [ "$COMPLIANCE" -lt 90 ] || [ "$TRUST" -lt 70 ]; then
+    echo "⚠️  $file - Compliance: $COMPLIANCE, Trust: $TRUST"
+    echo "$RESULT" | jq '.scores.compliance.breakdown, .scores.trust.breakdown'
+  fi
+done
+```
+
+### Batch Validation Report
+
+```bash
+#!/bin/bash
+# generate-report.sh - Create CSV report of all agent scores
+
+echo "File,Compliance,Trust,ComplianceRating,TrustRating" > report.csv
+
+for file in agents/*.json; do
+  RESULT=$(capiscio validate "$file" --detailed-scores --json 2>/dev/null)
+  if [ $? -eq 0 ]; then
+    COMPLIANCE=$(echo "$RESULT" | jq -r '.scores.compliance.total')
+    TRUST=$(echo "$RESULT" | jq -r '.scores.trust.total')
+    COMP_RATING=$(echo "$RESULT" | jq -r '.scores.compliance.rating')
+    TRUST_RATING=$(echo "$RESULT" | jq -r '.scores.trust.rating')
+    
+    echo "$file,$COMPLIANCE,$TRUST,$COMP_RATING,$TRUST_RATING" >> report.csv
+  fi
+done
+
+echo "📊 Report generated: report.csv"
+```
+
+---
+
+## Exit Codes and Scoring
+
+The CLI uses exit codes to indicate validation results:
+
+- **Exit 0**: Validation passed (agent is valid)
+- **Exit 1**: Validation failed (agent has errors)
+
+**Important:** The CLI exits with 0 even if scores are low, as long as the agent card is structurally valid. If you need to enforce score thresholds, use the JSON output and check scores in your script (see examples above).
+
+```bash
+# This will exit 0 even if trust is low
+capiscio validate agent.json --detailed-scores
+
+# To enforce thresholds, check JSON output
+TRUST=$(capiscio validate agent.json --detailed-scores --json | jq '.scores.trust.total')
+if [ "$TRUST" -lt 60 ]; then
+  echo "❌ Trust score too low"
+  exit 1
+fi
+```
+
+---
+
+## Rating Enums
+
+The CLI outputs rating labels based on score ranges:
+
+### Compliance Ratings
+- `PERFECT` (100)
+- `EXCELLENT` (95-99)
+- `GOOD` (85-94)
+- `FAIR` (70-84)
+- `POOR` (0-69)
+
+### Trust Ratings
+- `HIGHLY_TRUSTED` (90-100)
+- `TRUSTED` (70-89)
+- `MODERATELY_TRUSTED` (50-69)
+- `UNTRUSTED` (30-49)
+- `HIGHLY_UNTRUSTED` (0-29)
+
+### Availability Ratings (with `--test-live`)
+- `HIGHLY_AVAILABLE` (90-100)
+- `AVAILABLE` (70-89)
+- `PARTIALLY_AVAILABLE` (50-69)
+- `DEGRADED` (30-49)
+- `UNAVAILABLE` (0-29)
+
+---
+
+## See Also
+
+<div class="grid cards" markdown>
+
+-   **📚 Unified Scoring Guide**
+
+    ---
+
+    Complete scoring system reference with all breakdowns, calculations, and rating thresholds.
+
+    [:octicons-arrow-right-24: View Complete Guide](https://docs.capisc.io/guides/scoring-system/)
+
+-   **🐍 A2A Security Scoring**
+
+    ---
+
+    Python usage with ValidationResult API and decision patterns.
+
+    [:octicons-arrow-right-24: Python Usage](https://docs.capisc.io/a2a-security/guides/scoring/)
+
+-   **📖 CLI Reference**
+
+    ---
+
+    Complete command-line reference and options.
+
+    [:octicons-arrow-right-24: CLI Docs](./cli-reference/)
+
+-   **⚡ Quick Start**
+
+    ---
+
+    Get started with CapiscIO CLI in 5 minutes.
+
+    [:octicons-arrow-right-24: Quick Start](./getting-started/)
+
+</div>
+
+---
+
+**For complete scoring details**, see the [**Unified Scoring Guide**](https://docs.capisc.io/guides/scoring-system/).

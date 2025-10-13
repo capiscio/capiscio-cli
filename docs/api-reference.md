@@ -1,14 +1,20 @@
+---
+title: API Reference - CapiscIO CLI Documentation
+description: Programmatic API documentation for CapiscIO CLI including A2AValidator class, validation methods, and TypeScript interfaces.
+keywords: CapiscIO CLI API, A2AValidator, validation methods, TypeScript, programmatic usage, npm package
+---
+
 # API Reference
 
-> Programmatic usage documentation for Capiscio CLI
+> Programmatic usage documentation for CapiscIO CLI
 
-This document provides comprehensive API documentation for using Capiscio CLI programmatically.
+This document provides comprehensive API documentation for using CapiscIO CLI programmatically.
 
 ## Table of Contents
 
 - [Installation](#installation)
 - [Core Classes](#core-classes)
-- [Types & Interfaces](#types--interfaces)
+- [Types & Interfaces](#types-interfaces)
 - [Validation Options](#validation-options)
 - [Error Handling](#error-handling)
 - [Examples](#examples)
@@ -459,5 +465,5 @@ results.filter(r => !r.success).forEach(result => {
 ## See Also
 
 - [Validation Process Documentation](./validation-process.md)
-- [CLI Usage Guide](../README.md)
-- [Contributing Guide](../CONTRIBUTING.md)
+- [CLI Usage Guide](README.md)
+- [GitHub Repository](https://github.com/capiscio/capiscio-cli)

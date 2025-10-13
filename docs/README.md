@@ -1,14 +1,22 @@
-# Documentation Index
+# capiscio-cli Documentation
 
-> Complete documentation for Capiscio CLI
+> **Validate A2A agent cards with confidence** - Catch issues before they reach production
 
-Welcome to the Capiscio CLI documentation. This directory contains comprehensive guides covering all aspects of the validation tool.
+## Why capiscio-cli?
 
-## 📖 Documentation Structure
+**The Problem:** You're building an A2A agent and need to ensure your agent card is valid, trustworthy, and production-ready. Manual validation is error-prone and doesn't catch subtle issues.
+
+**The Solution:** capiscio-cli provides comprehensive three-dimensional validation:
+
+- ✅ **Spec Compliance (0-100)**: Is your agent card properly formatted?
+- ✅ **Trust (0-100)**: Can users verify your agent's authenticity?
+- ✅ **Availability (0-100)**: Are your endpoints operational?
+
+## � Documentation Structure
 
 ### User Documentation
 
-- **[README.md](../README.md)** - Main usage guide with installation, examples, and CLI reference
+- **[Installation & Usage](README.md)** - Installation guide and getting started
 - **[Validation Process](validation-process.md)** - Exhaustive guide to the validation system
 - **[Scoring System](scoring-system.md)** - Three-dimensional scoring breakdown and best practices
 - **[API Reference](api-reference.md)** - Programmatic usage and TypeScript API documentation
@@ -16,62 +24,48 @@ Welcome to the Capiscio CLI documentation. This directory contains comprehensive
 ### Developer Documentation
 
 - **[Architecture](architecture.md)** - Internal design, patterns, and extensibility
-- **[Contributing](../CONTRIBUTING.md)** - Development setup and contribution guidelines
-- **[Changelog](../CHANGELOG.md)** - Version history and release notes
-
-### Governance & Security
-
-- **[Security Policy](../SECURITY.md)** - Security reporting and best practices
-- **[License](../LICENSE)** - MIT license terms
 
 ## 🚀 Quick Navigation
 
 ### New Users
-1. Start with the [README](../README.md) for installation and basic usage
+1. Start with [Installation & Usage](README.md) for installation and basic usage
 2. Review [Validation Process](validation-process.md) to understand what's validated
 3. Learn about [Scoring System](scoring-system.md) to interpret your results
-4. Check out the examples in the README
 
 ### Developers
 1. Read the [API Reference](api-reference.md) for programmatic usage
 2. Study the [Architecture](architecture.md) for internal design
-3. Follow the [Contributing Guide](../CONTRIBUTING.md) for development setup
 
 ### CI/CD Integration
-1. See JSON output examples in the [README](../README.md#cicd-integration)
+1. See JSON output examples in the [API Reference](api-reference.md)
 2. Review error codes in [Validation Process](validation-process.md#error-codes-reference)
 3. Check [API Reference](api-reference.md#cicd-integration) for automation examples
-
-### Security
-1. Review the [Security Policy](../SECURITY.md) for vulnerability reporting
-2. Check [Architecture](architecture.md#dependency-management) for security considerations
-3. See security best practices in the [Security Policy](../SECURITY.md#security-best-practices-for-users)
 
 ## 🔍 Find What You Need
 
 ### I want to...
 
-- **Install and use the CLI** → [README.md](../README.md)
+- **Validate an agent card** → [Installation & Usage](README.md)
 - **Understand what gets validated** → [Validation Process](validation-process.md)
 - **Understand scoring results** → [Scoring System](scoring-system.md)
 - **Use the CLI programmatically** → [API Reference](api-reference.md)
 - **Extend or modify the validator** → [Architecture](architecture.md)
-- **Contribute code** → [Contributing Guide](../CONTRIBUTING.md)
-- **Report a security issue** → [Security Policy](../SECURITY.md)
-- **See what's changed** → [Changelog](../CHANGELOG.md)
+
+!!! tip "Building an A2A Agent?"
+    If you're building an agent (not just validating cards), check out [CapiscIO A2A Security](../../a2a-security/) for runtime protection.
 
 ### Validation Specifics
 
 - **Error codes and meanings** → [Validation Process - Error Codes](validation-process.md#error-codes-reference)
 - **Validation modes explained** → [Validation Process - Validation Modes](validation-process.md#validation-modes)
-- **Network and HTTP handling** → [Validation Process - HTTP Client](validation-process.md#http-client--network-validation)
+- **Network and HTTP handling** → [Validation Process - HTTP Client](validation-process.md#http-client-network-validation)
 - **Schema validation details** → [Validation Process - Schema Validation](validation-process.md#schema-validation)
 
 ### Integration Examples
 
-- **CLI usage examples** → [README - Usage](../README.md#usage)
+- **CLI usage examples** → [Installation & Usage](README.md)
 - **Programmatic examples** → [API Reference - Examples](api-reference.md#examples)
-- **CI/CD integration** → [README - CI/CD Integration](../README.md#integration)
+- **CI/CD integration** → [API Reference - CI/CD Integration](api-reference.md#cicd-integration)
 - **Custom HTTP clients** → [API Reference - Custom HTTP Client](api-reference.md#custom-http-client)
 
 ## 📝 Documentation Standards
@@ -86,12 +80,14 @@ Our documentation follows these principles:
 
 ## 🤝 Contributing to Documentation
 
-We welcome improvements to documentation! See our [Contributing Guide](../CONTRIBUTING.md) for:
+We welcome improvements to documentation! For:
 
 - How to submit documentation changes
 - Writing style guidelines
 - Documentation review process
 - Setting up the development environment
+
+See the repository on GitHub for more details.
 
 ---
 

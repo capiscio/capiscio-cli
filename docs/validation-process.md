@@ -1,20 +1,34 @@
-# Validation Process Documentation
+# 🔍 Validation Process Documentation
 
-> Comprehensive guide to the Capiscio CLI validation system
+> **Comprehensive guide to the CapiscIO CLI validation system**
+
+## What Gets Validated?
+
+**The Challenge:** The A2A protocol specification is comprehensive, and manually checking every requirement is time-consuming and error-prone.
+
+**Our Solution:** Automated validation across 7+ categories:
+
+- ✅ Input resolution and discovery
+- ✅ HTTP client and network validation
+- ✅ Schema and structure compliance
+- ✅ Version compatibility analysis
+- ✅ Protocol adherence
+- ✅ Security and authentication
+- ✅ Endpoint availability (optional)
 
 This document provides an exhaustive overview of everything included in the A2A agent card validation process.
 
-## Table of Contents
+## 📚 Table of Contents
 
-- [Input Resolution & Discovery](#input-resolution--discovery)
-- [HTTP Client & Network Validation](#http-client--network-validation)
+- [Input Resolution & Discovery](#input-resolution-discovery)
+- [HTTP Client & Network Validation](#http-client-network-validation)
 - [Schema Validation](#schema-validation)
 - [Version Compatibility Analysis](#version-compatibility-analysis)
 - [Validation Modes](#validation-modes)
 - [Advanced Feature Detection](#advanced-feature-detection)
-- [Output & Reporting](#output--reporting)
+- [Output & Reporting](#output-reporting)
 - [Error Codes Reference](#error-codes-reference)
-- [Performance & Timing](#performance--timing)
+- [Performance & Timing](#performance-timing)
 
 ## Input Resolution & Discovery
 
@@ -321,12 +335,22 @@ Version: 0.3.0 (Strictness: progressive)
 
 ---
 
+## See Also
+
+- **[Scoring System](scoring-system.md)** - Understand how validation results translate to scores
+- **[API Reference](api-reference.md)** - Use validation programmatically
+- **[Architecture](architecture.md)** - Internal validator implementation details
+- **[A2A Security](../../a2a-security/)** - Runtime protection for production agents
+
+!!! tip "Production Deployment"
+    capiscio-cli validates agent cards during development and CI/CD. For runtime protection, use [CapiscIO A2A Security middleware](../../a2a-security/).
+
 ## Contributing to Validation
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for information on extending the validation system.
+See the [GitHub repository](https://github.com/capiscio/capiscio-cli) for information on extending the validation system.
 
 ## Related Documentation
 
-- [CLI Usage Guide](../README.md)
+- [CLI Usage Guide](README.md)
 - [API Reference](./api-reference.md)
-- [A2A Protocol Specification](https://a2a-protocol.org/)
+- [A2A Protocol Specification](https://github.com/a2aproject/A2A){:target="_blank"}
