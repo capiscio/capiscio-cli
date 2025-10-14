@@ -20,7 +20,7 @@
     "url": "https://github.com/capiscio/capiscio-cli/issues"
   },
   "license": "Apache-2.0",
-  "author": "Capiscio Team",
+  "author": "CapiscIO Team",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
