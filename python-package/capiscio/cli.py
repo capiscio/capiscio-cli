@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Capiscio CLI Wrapper
+CapiscIO CLI Wrapper
 
-This module provides a Python wrapper for the Capiscio CLI tool.
+This module provides a Python wrapper for the CapiscIO CLI tool.
 It automatically detects the current platform and architecture,
 then executes the appropriate pre-built binary.
 """
@@ -79,7 +79,7 @@ def get_binary_path() -> Path:
 
 def run_capiscio(args: Optional[List[str]] = None) -> int:
     """
-    Execute the Capiscio CLI tool with the given arguments.
+    Execute the CapiscIO CLI tool with the given arguments.
     
     Args:
         args: Command line arguments to pass to capiscio (default: sys.argv[1:])

@@ -10,10 +10,10 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = {text = "MIT"}
 authors = [
-    {name = "Capiscio Team", email = "hello@capiscio.com"}
+    {name = "CapiscIO Team", email = "hello@capiscio.com"}
 ]
 maintainers = [
-    {name = "Capiscio Team", email = "hello@capiscio.com"}
+    {name = "CapiscIO Team", email = "hello@capiscio.com"}
 ]
 keywords = [
     "a2a", "protocol", "validation", "cli", "agent", "ai", "jsonrpc", "grpc", "rest", 
