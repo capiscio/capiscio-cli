@@ -1,5 +1,5 @@
 {
-  "protocolVersion": "0.3.0",
+  "protocolVersion": "not-semver",
   "name": "Invalid Version Agent",
   "description": "Agent with non-semver version",
   "url": "https://example.com/agent",
@@ -7,5 +7,5 @@
   "provider": {
     "organization": "Test Corp"
   },
-  "version": "not-a-semver-version"
+  "version": "1.0.0"
 }

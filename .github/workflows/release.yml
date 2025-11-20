@@ -40,6 +40,9 @@ jobs:
       
     - name: Run tests
       run: npm test
+
+    - name: Run integration tests
+      run: npm run test:integration
       
     - name: Build CLI
       run: npm run build

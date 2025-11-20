@@ -7,41 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.0] - 2025-10-03
+## [2.1.0] - Unreleased
 
 ### Added
-- **Three-Dimensional Scoring System** - Revolutionary multi-dimensional evaluation replacing single score
-  - **Compliance Scoring** (0-100): Measures A2A v0.3.0 specification adherence with weighted criteria
-    - Core Fields (60 pts): Required field presence and validity
-    - Skills Quality (20 pts): Skill definition completeness and structure
-    - Format Compliance (15 pts): URL formats, semver, protocol versions, transports
-    - Data Quality (5 pts): Duplicate detection, field lengths, SSRF protection
-  - **Trust Scoring** (0-100): Evaluates security and authenticity with confidence multiplier
-    - Cryptographic Signatures (40 pts): JWS validation, coverage, and freshness
-    - Provider Trust (25 pts): Organization identity, reachable HTTPS URLs
-    - Security Posture (20 pts): HTTPS-only transports, authentication requirements
-    - Documentation (15 pts): ToS, privacy policy, documentation URLs
-    - **Trust Confidence Multiplier**: Revolutionary approach that scales trust score based on signature validity
-      - 1.0x with valid signature (full confidence)
-      - 0.6x without signature (reduced confidence)
-      - 0.4x with invalid signature (minimal confidence)
-  - **Availability Scoring** (0-100): Measures operational readiness (requires `--test-live`)
-    - Primary Endpoint (50 pts): Response time, connectivity, CORS, TLS validity
-    - Transport Support (30 pts): Preferred protocol availability, additional interfaces
-    - Response Quality (20 pts): Valid structure, content types, error handling
-- **Production Readiness Thresholds** - Clear guidance for deployment decisions
-  - Compliance ≥95: Specification adherence sufficient for production
-  - Trust ≥60: Minimum trust level for production deployment
-  - Availability ≥80: Operational stability sufficient for production
-- **Comprehensive Scoring Documentation** - 350-line guide covering all aspects of the scoring system
-- **9 New Integration Tests** - Complete test coverage for all scoring scenarios
-- **Colored Score Display** - Visual feedback with score-based color coding (green/yellow/magenta/red)
-- **Detailed Score Breakdowns** - Per-category explanations of how scores were calculated
-- **Actionable Recommendations** - Multi-line guidance for improving scores across all dimensions
-- **JSON Scoring Output** - Complete scoring data available in `--json` mode for automation
+- **Binary Manager**: CLI now automatically downloads, verifies, and manages the `capiscio-core` Go binary.
+- **Dependency**: The CLI requires the `capiscio-core` binary to function; managed transparently for users.
 
 ### Changed
-- **BREAKING: Scoring is now default behavior** - Three-dimensional scores always calculated and displayed
+- **ARCHITECTURE CHANGE**: The Node.js CLI is now a lightweight wrapper around the high-performance `capiscio-core` Go binary.
+  - Ensures 100% consistency between CLI and Core validation logic.
+  - Drastically improves performance and stability.
+  - Automatically manages the binary download and updates.
+- **License**: Project license changed from MIT to **Apache 2.0**.
+
+### Removed
+- **BREAKING: Removed `--conservative` flag**: The CLI no longer supports the `--conservative` mode. All validations use the unified scoring logic.
+
+### Breaking Changes
+- **Score Expectations Updated**: Test expectations for scores have changed (e.g., 85 vs 100, 96 vs 100). Update your tests accordingly.
+- **Error Message Format Changed**: Error messages now use the Go binary's output format, which may differ from previous CLI output.
+- **License Change**: Project license changed from MIT to Apache 2.0. Review compliance requirements.
+
+## [2.0.0] - 2025-10-03
 - **BREAKING: Output format changed** - Removed single "Score: X/100" in favor of three-dimensional breakdown
 - **BREAKING: No backward compatibility** - Legacy scoring completely removed from codebase
 - Scoring results now appear in every validation run without opt-in flags

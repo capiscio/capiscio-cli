@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](https://github.com/capiscio/capiscio-cli/security)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 ## Common A2A Integration Challenges
 
@@ -68,6 +68,8 @@ capiscio validate ./agent-card.json --strict --json
 
 ### Option 3: Download Standalone Binary (No Dependencies)
 
+> **Note:** The Node.js CLI (Option 1) is now a lightweight wrapper that automatically manages the high-performance Go binary for you. If you prefer to manage the binary yourself, you can download it directly.
+
 | Platform | Architecture | Download | Size |
 |----------|-------------|----------|------|
 | **Linux** | x64 | [`capiscio-linux-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz) | ~18.2MB |
@@ -108,7 +110,7 @@ Expand-Archive -Path capiscio-win-x64.zip -DestinationPath .
 - **🔐 Two-Layer Validation** - ONLY CapiscIO validates both cryptographic trust AND protocol compliance
 - **✅ JWS Signature Verification** - Cryptographic validation of agent authenticity (RFC 7515 compliant)
 - **🚀 Live Protocol Testing** - Actually tests JSONRPC, GRPC, and REST endpoints (not just schemas)
-- **⚡ Zero Dependencies** - Native executables for Linux, macOS (Intel & ARM), Windows (Intel & ARM)
+- **⚡ High Performance** - Powered by a native Go binary for blazing fast validation
 - **🛡️ Secure by Default** - Signature verification enabled automatically
 - **🔧 CI/CD Ready** - JSON output with proper exit codes for automated pipelines
 - **🌐 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
@@ -182,7 +184,6 @@ capiscio validate https://agent.com --test-live --strict --json
 
 - **Progressive** (default): Balanced validation with warnings for compatibility issues
 - **Strict**: Full compliance required, warnings become errors, registry-ready validation
-- **Conservative**: Minimal validation for development and testing environments
 
 **Registry Ready:** Use `--registry-ready` for strict validation optimized for agent registry deployment.
 
@@ -200,7 +201,9 @@ capiscio validate agent.json
 - **Trust (0-100)** - How trustworthy and secure is this agent? (includes confidence multiplier)
 - **Availability (0-100)** - Is the endpoint operational? (requires `--test-live`)
 
-Each score includes a detailed breakdown showing exactly what contributed to the result. **Learn more:** [Scoring System Documentation](docs/scoring-system.md)
+Each score includes a detailed breakdown showing exactly what contributed to the result.
+
+> **Note:** Legacy single-score output has been replaced by this multi-dimensional system in v2.0.0.
 
 ## Why Use CapiscIO CLI?
 
@@ -302,7 +305,7 @@ A: Current spec uses `agent-card.json`. We also support legacy `agent.json` file
 
 ## License
 
-MIT © [CapiscIO](https://capisc.io)
+Apache-2.0 © [CapiscIO](https://capisc.io)
 
 ---
 

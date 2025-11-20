@@ -1,6 +1,6 @@
 {
   "name": "capiscio-cli",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "The definitive CLI tool for validating A2A (Agent-to-Agent) protocol agent cards",
   "keywords": [
     "a2a",
@@ -54,8 +54,10 @@
     "start": "node bin/capiscio.js"
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
+    "execa": "^5.1.1",
     "glob": "^10.3.10",
     "inquirer": "^9.2.12",
     "jose": "^6.1.0",
