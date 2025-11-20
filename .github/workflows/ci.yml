@@ -46,6 +46,9 @@ jobs:
     - name: Run tests
       run: npm test
 
+    - name: Run integration tests
+      run: npm run test:integration
+
   build:
     runs-on: ubuntu-latest
     needs: test

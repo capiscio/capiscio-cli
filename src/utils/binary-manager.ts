@@ -1,0 +1,202 @@
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import axios from 'axios';
+import tar from 'tar';
+import { promisify } from 'util';
+import stream from 'stream';
+import ora from 'ora';
+
+const pipeline = promisify(stream.pipeline);
+
+// Configuration
+const BINARY_NAME = 'capiscio-core';
+// TODO: Update this to the actual release version you want to pin
+const VERSION = 'v1.0.2'; 
+const REPO_OWNER = 'capiscio';
+const REPO_NAME = 'capiscio-core';
+
+export class BinaryManager {
+  private static instance: BinaryManager;
+  private binaryPath: string;
+  private installDir: string;
+
+  private constructor() {
+    // Store binary in node_modules/.bin or a local bin directory
+    // We need to find the package root to ensure we store it in the right place
+    // regardless of whether we're running from src (dev) or dist (prod)
+    
+    // Check if running in pkg
+    // @ts-ignore
+    if (process.pkg) {
+      // In pkg, we should store the binary next to the executable
+      this.installDir = path.dirname(process.execPath);
+    } else {
+      const packageRoot = this.findPackageRoot();
+      this.installDir = path.join(packageRoot, 'bin');
+    }
+    
+    // Ensure bin directory exists
+    if (!fs.existsSync(this.installDir)) {
+      try {
+        fs.mkdirSync(this.installDir, { recursive: true });
+      } catch (error) {
+        // If we can't create the directory (e.g. permission denied or read-only fs), 
+        // fallback to a user-writable directory
+        this.installDir = path.join(os.homedir(), '.capiscio', 'bin');
+        if (!fs.existsSync(this.installDir)) {
+          fs.mkdirSync(this.installDir, { recursive: true });
+        }
+      }
+    }
+    
+    const platform = this.getPlatform();
+    const ext = platform === 'windows' ? '.exe' : '';
+    this.binaryPath = path.join(this.installDir, `${BINARY_NAME}${ext}`);
+  }
+
+  private findPackageRoot(): string {
+    let currentDir = __dirname;
+    // Look for package.json up the directory tree
+    // Limit to 5 levels up to prevent infinite loops or going too far
+    for (let i = 0; i < 5; i++) {
+      if (fs.existsSync(path.join(currentDir, 'package.json'))) {
+        return currentDir;
+      }
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) break;
+      currentDir = parentDir;
+    }
+    // Fallback: assume we are in dist/ or src/utils/ and go up appropriately
+    // If we can't find package.json, we might be in a bundled environment where it's not included
+    // In that case, try to use the directory of the main module or process.cwd()
+    return path.resolve(__dirname, '..'); 
+  }
+
+  public static getInstance(): BinaryManager {
+    if (!BinaryManager.instance) {
+      BinaryManager.instance = new BinaryManager();
+    }
+    return BinaryManager.instance;
+  }
+
+  public async getBinaryPath(): Promise<string> {
+    // Check for environment variable override
+    if (process.env.CAPISCIO_CORE_PATH) {
+      if (fs.existsSync(process.env.CAPISCIO_CORE_PATH)) {
+        return process.env.CAPISCIO_CORE_PATH;
+      }
+      console.warn(`Warning: CAPISCIO_CORE_PATH set to '${process.env.CAPISCIO_CORE_PATH}' but file does not exist. Falling back to managed binary.`);
+    }
+
+    if (!fs.existsSync(this.binaryPath)) {
+      await this.install();
+    }
+    return this.binaryPath;
+  }
+
+  private async install(): Promise<void> {
+    const spinner = ora('Downloading CapiscIO Core binary...').start();
+    
+    try {
+      const platform = this.getPlatform();
+      const arch = this.getArch();
+      
+      // Construct download URL
+      // Format: https://github.com/capiscio/capiscio-core/releases/download/v0.1.0/capiscio-core_0.1.0_darwin_arm64.tar.gz
+      // Note: Adjust naming convention based on your GoReleaser config
+      const versionNoV = VERSION.replace('v', '');
+      const fileName = `${BINARY_NAME}_${versionNoV}_${platform}_${arch}.tar.gz`;
+      const url = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${VERSION}/${fileName}`;
+
+      // Download
+      const response = await axios.get(url, { responseType: 'stream' });
+      
+      // Extract
+      // We assume the tar.gz contains the binary at the root or inside a folder
+      // For simplicity, we'll extract to a temp dir and move the binary
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'capiscio-'));
+      const tarPath = path.join(tempDir, fileName);
+      
+      const writer = fs.createWriteStream(tarPath);
+      await pipeline(response.data, writer);
+
+      await tar.x({
+        file: tarPath,
+        cwd: tempDir
+      });
+
+      // Find the binary in the extracted files
+      // It might be named 'capiscio' or 'capiscio-core'
+      const extractedBinName = platform === 'windows' ? 'capiscio.exe' : 'capiscio';
+      const possiblePaths = [
+        path.join(tempDir, extractedBinName),
+        path.join(tempDir, BINARY_NAME),
+        path.join(tempDir, `capiscio-core_${versionNoV}_${platform}_${arch}`, extractedBinName)
+      ];
+
+      let foundPath = '';
+      for (const p of possiblePaths) {
+        if (fs.existsSync(p)) {
+          foundPath = p;
+          break;
+        }
+      }
+
+      if (!foundPath) {
+        // Fallback: search recursively
+        const findFile = (dir: string, name: string): string | null => {
+          const files = fs.readdirSync(dir);
+          for (const file of files) {
+            const fullPath = path.join(dir, file);
+            const stat = fs.statSync(fullPath);
+            if (stat.isDirectory()) {
+              const found = findFile(fullPath, name);
+              if (found) return found;
+            } else if (file === name) {
+              return fullPath;
+            }
+          }
+          return null;
+        };
+        const found = findFile(tempDir, extractedBinName);
+        if (found) foundPath = found;
+      }
+
+      if (!foundPath) {
+        throw new Error(`Could not find binary '${extractedBinName}' in downloaded archive`);
+      }
+
+      // Move to install dir
+      fs.copyFileSync(foundPath, this.binaryPath);
+      fs.chmodSync(this.binaryPath, 0o755); // Make executable
+
+      // Cleanup
+      fs.rmSync(tempDir, { recursive: true, force: true });
+
+      spinner.succeed(`Installed CapiscIO Core ${VERSION}`);
+    } catch (error) {
+      spinner.fail('Failed to install binary');
+      throw error;
+    }
+  }
+
+  private getPlatform(): string {
+    const platform = os.platform();
+    switch (platform) {
+      case 'darwin': return 'darwin';
+      case 'linux': return 'linux';
+      case 'win32': return 'windows';
+      default: throw new Error(`Unsupported platform: ${platform}`);
+    }
+  }
+
+  private getArch(): string {
+    const arch = os.arch();
+    switch (arch) {
+      case 'x64': return 'amd64';
+      case 'arm64': return 'arm64';
+      default: throw new Error(`Unsupported architecture: ${arch}`);
+    }
+  }
+}
