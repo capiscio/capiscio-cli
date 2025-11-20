@@ -219,22 +219,9 @@ describe('CLI Integration Tests', () => {
     });
 
     // Conservative mode is temporarily disabled
-    // it('should use conservative mode when specified', () => {
-    //   const result = execSync(`node "${CLI_PATH}" validate "${join(TEST_DIR, 'mode-test-agent.json')}" --conservative`, { 
-    //     encoding: 'utf8',
-    //     cwd: TEST_DIR 
-    //   });
-
-    //   // Conservative mode might pass or fail depending on implementation, 
-    //   // but for now we just check it runs without erroring out if it's supposed to pass
-    //   // or check output if it fails.
-    //   // Assuming conservative mode is similar to progressive for this agent or just stricter on some things.
-    //   // If it fails, we should catch it.
-    //   // But wait, if conservative mode is stricter, it might fail on warnings too?
-    //   // Let's assume it passes for now, or check the output.
-    //   // Actually, let's just check that it runs.
-    //   expect(result).toContain('A2A AGENT VALIDATION');
-    // });
+    it.skip('should use conservative mode when specified', () => {
+      // Conservative mode is not currently supported.
+    });
   });
 
   describe('Auto-detection', () => {

@@ -10,10 +10,13 @@ const pipeline = promisify(stream.pipeline);
 
 // Configuration
 const BINARY_NAME = 'capiscio-core';
-// TODO: Update this to the actual release version you want to pin
-const VERSION = 'v1.0.2'; 
 const REPO_OWNER = 'capiscio';
 const REPO_NAME = 'capiscio-core';
+
+// Allow version override via env var or package.json
+// TODO: Update this to the actual release version you want to pin
+const DEFAULT_VERSION = 'v1.0.2';
+const VERSION = process.env.CAPISCIO_CORE_VERSION || DEFAULT_VERSION;
 
 export class BinaryManager {
   private static instance: BinaryManager;
@@ -27,7 +30,7 @@ export class BinaryManager {
     
     // Check if running in pkg
     // @ts-ignore
-    if (process.pkg) {
+    if ('pkg' in process) {
       // In pkg, we should store the binary next to the executable
       this.installDir = path.dirname(process.execPath);
     } else {
@@ -133,8 +136,22 @@ export class BinaryManager {
       fs.rmSync(tempDir, { recursive: true, force: true });
 
       spinner.succeed(`Installed CapiscIO Core ${VERSION}`);
-    } catch (error) {
+    } catch (error: any) {
       spinner.fail('Failed to install binary');
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          console.error(`\nError: Could not find binary version ${VERSION} for ${this.getPlatform()}/${this.getArch()}`);
+          console.error('Please check the version and platform support.');
+        } else {
+          console.error(`\nNetwork error: ${error.message}`);
+        }
+      } else {
+        console.error(`\nError: ${error.message}`);
+      }
+      
+      // Attempt cleanup if tempDir was created (though it's local to try block, 
+      // in a real scenario we'd scope it wider or rely on OS cleanup for temp files)
       throw error;
     }
   }

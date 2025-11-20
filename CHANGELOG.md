@@ -7,13 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.1.0] - 2025-11-20
+## [2.1.0] - Unreleased
+
+### Added
+- **Binary Manager**: CLI now automatically downloads, verifies, and manages the `capiscio-core` Go binary.
+- **Dependency**: The CLI requires the `capiscio-core` binary to function; managed transparently for users.
 
 ### Changed
 - **ARCHITECTURE CHANGE**: The Node.js CLI is now a lightweight wrapper around the high-performance `capiscio-core` Go binary.
   - Ensures 100% consistency between CLI and Core validation logic.
   - Drastically improves performance and stability.
   - Automatically manages the binary download and updates.
+- **License**: Project license changed from MIT to **Apache 2.0**.
+
+### Removed
+- **BREAKING: Removed `--conservative` flag**: The CLI no longer supports the `--conservative` mode. All validations use the unified scoring logic.
+
+### Breaking Changes
+- **Score Expectations Updated**: Test expectations for scores have changed (e.g., 85 vs 100, 96 vs 100). Update your tests accordingly.
+- **Error Message Format Changed**: Error messages now use the Go binary's output format, which may differ from previous CLI output.
+- **License Change**: Project license changed from MIT to Apache 2.0. Review compliance requirements.
 
 ## [2.0.0] - 2025-10-03
 - **BREAKING: Output format changed** - Removed single "Score: X/100" in favor of three-dimensional breakdown
