@@ -66,43 +66,29 @@ capiscio validate https://your-agent.com
 capiscio validate ./agent-card.json --strict --json
 ```
 
-### Option 3: Download Standalone Binary (No Dependencies)
+### Option 3: Standalone Binary (Advanced)
 
-> **Note:** The Node.js CLI (Option 1) is now a lightweight wrapper that automatically manages the high-performance Go binary for you. If you prefer to manage the binary yourself, you can download it directly.
+If you don't want to use Node.js or Python, you can download the standalone Go binary directly from the **capiscio-core** repository. This is the engine that powers the CLI.
 
-| Platform | Architecture | Download | Size |
-|----------|-------------|----------|------|
-| **Linux** | x64 | [`capiscio-linux-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz) | ~18.2MB |
-| **macOS** | Intel | [`capiscio-darwin-x64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz) | ~18.3MB |
-| **macOS** | Apple Silicon | [`capiscio-darwin-arm64.tar.gz`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz) | ~16.6MB |
-| **Windows** | Intel x64 | [`capiscio-win-x64.zip`](https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.zip) | ~14.7MB |
+**[Download latest binaries from capiscio-core releases](https://github.com/capiscio/capiscio-core/releases)**
 
-> **Note:** Windows ARM64 users should install via npm (`npm install -g capiscio-cli`) or pip (`pip install capiscio`) instead.
+| Platform | Architecture | Binary Name |
+|----------|-------------|-------------|
+| **Linux** | x64 | `capiscio-linux-amd64` |
+| **macOS** | Intel | `capiscio-darwin-amd64` |
+| **macOS** | Apple Silicon | `capiscio-darwin-arm64` |
+| **Windows** | Intel x64 | `capiscio-windows-amd64.exe` |
 
-#### Quick Download Commands:
+#### Quick Download Example (Linux):
 ```bash
-# Linux x64
-curl -L -o capiscio-linux-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz
-tar -xzf capiscio-linux-x64.tar.gz
+# Download the binary
+curl -L -o capiscio https://github.com/capiscio/capiscio-core/releases/download/v1.0.2/capiscio-linux-amd64
+
+# Make executable
 chmod +x capiscio
 
-# macOS Intel
-curl -L -o capiscio-darwin-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-x64.tar.gz
-tar -xzf capiscio-darwin-x64.tar.gz
-chmod +x capiscio
-
-# macOS Apple Silicon (M1/M2/M3/M4)
-curl -L -o capiscio-darwin-arm64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-darwin-arm64.tar.gz
-tar -xzf capiscio-darwin-arm64.tar.gz
-chmod +x capiscio
-
-# Windows Intel (PowerShell)
-Invoke-WebRequest -Uri "https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-win-x64.zip" -OutFile "capiscio-win-x64.zip"
-Expand-Archive -Path capiscio-win-x64.zip -DestinationPath .
-
-# Use the binary (all platforms)
+# Run
 ./capiscio validate ./agent-card.json
-# or .\capiscio.exe validate .\agent-card.json (Windows)
 ```
 
 ## Key Features
@@ -276,15 +262,15 @@ Signature verification adds minimal overhead while providing crucial security gu
     capiscio validate ./agent-card.json --json --strict
 ```
 
-### Using Standalone Binary:
+### Using Standalone Binary (Core):
 ```yaml
 # GitHub Actions - No Node.js required
 - name: Download and Validate Agent
   run: |
-    curl -L -o capiscio-linux-x64.tar.gz https://github.com/capiscio/capiscio-cli/releases/latest/download/capiscio-linux-x64.tar.gz
-    tar -xzf capiscio-linux-x64.tar.gz
-    chmod +x capiscio-linux-x64
-    ./capiscio-linux-x64 validate ./agent-card.json --json --strict
+    # Download Core Binary (Linux AMD64)
+    curl -L -o capiscio https://github.com/capiscio/capiscio-core/releases/download/v1.0.2/capiscio-linux-amd64
+    chmod +x capiscio
+    ./capiscio validate ./agent-card.json --json --strict
 ```
 
 Exit codes: 0 = success, 1 = validation failed
