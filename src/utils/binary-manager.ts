@@ -103,73 +103,32 @@ export class BinaryManager {
       const arch = this.getArch();
       
       // Construct download URL
-      // Format: https://github.com/capiscio/capiscio-core/releases/download/v0.1.0/capiscio-core_0.1.0_darwin_arm64.tar.gz
-      // Note: Adjust naming convention based on your GoReleaser config
-      const versionNoV = VERSION.replace('v', '');
-      const fileName = `${BINARY_NAME}_${versionNoV}_${platform}_${arch}.tar.gz`;
-      const url = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${VERSION}/${fileName}`;
+      // Assets are named: capiscio-{platform}-{arch} (e.g. capiscio-linux-amd64)
+      // Windows has .exe extension
+      let assetName = `capiscio-${platform}-${arch}`;
+      if (platform === 'windows') {
+        assetName += '.exe';
+      }
+      
+      const url = `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${VERSION}/${assetName}`;
 
       // Download
       const response = await axios.get(url, { responseType: 'stream' });
       
-      // Extract
-      // We assume the tar.gz contains the binary at the root or inside a folder
-      // For simplicity, we'll extract to a temp dir and move the binary
+      // Write directly to a temp file
       const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'capiscio-'));
-      const tarPath = path.join(tempDir, fileName);
+      const tempFilePath = path.join(tempDir, assetName);
       
-      const writer = fs.createWriteStream(tarPath);
+      const writer = fs.createWriteStream(tempFilePath);
       await pipeline(response.data, writer);
 
-      await tar.x({
-        file: tarPath,
-        cwd: tempDir
-      });
-
-      // Find the binary in the extracted files
-      // It might be named 'capiscio' or 'capiscio-core'
-      const extractedBinName = platform === 'windows' ? 'capiscio.exe' : 'capiscio';
-      const possiblePaths = [
-        path.join(tempDir, extractedBinName),
-        path.join(tempDir, BINARY_NAME),
-        path.join(tempDir, `capiscio-core_${versionNoV}_${platform}_${arch}`, extractedBinName)
-      ];
-
-      let foundPath = '';
-      for (const p of possiblePaths) {
-        if (fs.existsSync(p)) {
-          foundPath = p;
-          break;
-        }
-      }
-
-      if (!foundPath) {
-        // Fallback: search recursively
-        const findFile = (dir: string, name: string): string | null => {
-          const files = fs.readdirSync(dir);
-          for (const file of files) {
-            const fullPath = path.join(dir, file);
-            const stat = fs.statSync(fullPath);
-            if (stat.isDirectory()) {
-              const found = findFile(fullPath, name);
-              if (found) return found;
-            } else if (file === name) {
-              return fullPath;
-            }
-          }
-          return null;
-        };
-        const found = findFile(tempDir, extractedBinName);
-        if (found) foundPath = found;
-      }
-
-      if (!foundPath) {
-        throw new Error(`Could not find binary '${extractedBinName}' in downloaded archive`);
-      }
-
       // Move to install dir
-      fs.copyFileSync(foundPath, this.binaryPath);
-      fs.chmodSync(this.binaryPath, 0o755); // Make executable
+      // We rename it to capiscio-core (or .exe) for internal consistency
+      fs.copyFileSync(tempFilePath, this.binaryPath);
+      
+      if (platform !== 'windows') {
+        fs.chmodSync(this.binaryPath, 0o755); // Make executable
+      }
 
       // Cleanup
       fs.rmSync(tempDir, { recursive: true, force: true });
