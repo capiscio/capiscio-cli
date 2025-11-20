@@ -37,8 +37,6 @@
   },
   "scripts": {
     "build": "tsup",
-    "build:binaries": "node scripts/build-binaries.js",
-    "build:python": "node scripts/build-python-package.js",
     "dev": "tsup --watch",
     "test": "npm run test:unit",
     "test:unit": "vitest run src/__tests__",
@@ -69,8 +67,6 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^1.6.0",
-    "@yao-pkg/pkg": "^6.7.0",
-    "esbuild": "^0.25.10",
     "eslint": "^8.57.1",
     "tsup": "^8.5.0",
     "typescript": "^5.2.2",
