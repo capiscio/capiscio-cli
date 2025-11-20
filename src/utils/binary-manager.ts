@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import axios from 'axios';
-import tar from 'tar';
 import { promisify } from 'util';
 import stream from 'stream';
 import ora from 'ora';
