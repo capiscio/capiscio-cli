@@ -61,8 +61,7 @@
     "glob": "^10.3.10",
     "inquirer": "^9.2.12",
     "jose": "^6.1.0",
-    "ora": "^5.4.1",
-    "tar": "^7.5.2"
+    "ora": "^5.4.1"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.3",
