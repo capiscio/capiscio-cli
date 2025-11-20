@@ -51,22 +51,7 @@ capiscio validate https://your-agent.com
 capiscio validate ./agent-card.json --strict --json
 ```
 
-### Option 2: Install via pip (Requires Python 3.7+)
-```bash
-# Install globally
-pip install capiscio
-
-# Validate your agent
-capiscio validate ./agent-card.json
-
-# Test live endpoints  
-capiscio validate https://your-agent.com
-
-# Strict validation for production
-capiscio validate ./agent-card.json --strict --json
-```
-
-### Option 3: Standalone Binary (Advanced)
+### Option 2: Standalone Binary (Advanced)
 
 If you don't want to use Node.js or Python, you can download the standalone Go binary directly from the **capiscio-core** repository. This is the engine that powers the CLI.
 
@@ -100,7 +85,7 @@ chmod +x capiscio
 - **🛡️ Secure by Default** - Signature verification enabled automatically
 - **🔧 CI/CD Ready** - JSON output with proper exit codes for automated pipelines
 - **🌐 Smart Discovery** - Finds agent cards automatically with multiple fallbacks
-- **💻 Cross-Platform** - npm, pip, or standalone binaries
+- **💻 Cross-Platform** - npm or standalone binaries
 
 ## Usage
 
