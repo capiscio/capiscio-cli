@@ -4,12 +4,12 @@
 
 🌐 **[Learn more about CapiscIO](https://capisc.io)** | **[Download Page](https://capisc.io/downloads)** | **[Web Validator](https://capisc.io/validator)**
 
-[![npm version](https://badge.fury.io/js/capiscio-cli.svg)](https://badge.fury.io/js/capiscio-cli)
-[![Downloads](https://img.shields.io/npm/dm/capiscio-cli)](https://www.npmjs.com/package/capiscio-cli)
-[![CI](https://github.com/capiscio/capiscio-cli/workflows/CI/badge.svg)](https://github.com/capiscio/capiscio-cli/actions)
-[![Coverage](https://img.shields.io/badge/coverage-70.2%25-green.svg)](https://github.com/capiscio/capiscio-cli)
+[![npm version](https://badge.fury.io/js/capiscio.svg)](https://badge.fury.io/js/capiscio)
+[![Downloads](https://img.shields.io/npm/dm/capiscio)](https://www.npmjs.com/package/capiscio)
+[![CI](https://github.com/capiscio/capiscio-node/workflows/CI/badge.svg)](https://github.com/capiscio/capiscio-node/actions)
+[![Coverage](https://img.shields.io/badge/coverage-70.2%25-green.svg)](https://github.com/capiscio/capiscio-node)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](https://github.com/capiscio/capiscio-cli/security)
+[![Security](https://img.shields.io/badge/security-audited-brightgreen.svg)](https://github.com/capiscio/capiscio-node/security)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -39,7 +39,7 @@
 ### Option 1: Install via NPM (Requires Node.js)
 ```bash
 # Install globally
-npm install -g capiscio-cli
+npm install -g capiscio
 
 # Validate your agent
 capiscio validate ./agent-card.json
@@ -243,7 +243,7 @@ Signature verification adds minimal overhead while providing crucial security gu
 # GitHub Actions
 - name: Validate Agent
   run: |
-    npm install -g capiscio-cli
+    npm install -g capiscio
     capiscio validate ./agent-card.json --json --strict
 ```
 
@@ -280,6 +280,6 @@ Apache-2.0 © [CapiscIO](https://capisc.io)
 
 ---
 
-**Need help?** [Visit capisc.io](https://capisc.io) | [Open an issue](https://github.com/capiscio/capiscio-cli/issues) | [Documentation](https://capisc.io/cli) | [Web Validator](https://capisc.io/validator)
+**Need help?** [Visit capisc.io](https://capisc.io) | [Open an issue](https://github.com/capiscio/capiscio-node/issues) | [Documentation](https://capisc.io/cli) | [Web Validator](https://capisc.io/validator)
 
 **Keywords**: A2A protocol, AI agent validation, agent-card.json validator, agent.json validator, agent-to-agent protocol, LLM agent cards, AI agent discovery, agent configuration validation, transport protocol testing, JSONRPC validation, GRPC testing, REST endpoint validation, agent protocol CLI, AI agent compliance, JWS signature verification, agent card authentication

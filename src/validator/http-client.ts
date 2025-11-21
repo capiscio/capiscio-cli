@@ -25,7 +25,7 @@ export class FetchHttpClient implements HttpClient {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'capiscio-cli/1.1.0',
+          'User-Agent': 'capiscio-node/2.1.0',
           ...options.headers
         },
         signal: options.signal || controller.signal
