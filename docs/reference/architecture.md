@@ -417,13 +417,13 @@ tests/
 
 ## See Also
 
-- **[Validation Process](validation-process.md)** - What gets validated
-- **[Scoring System](scoring-system.md)** - How validation results become scores
-- **[API Reference](api-reference.md)** - Public API surface
+- **[Validation Process](../../concepts/validation.md)** - What gets validated
+- **[Scoring System](../../concepts/scoring.md)** - How validation results become scores
+- **[API Reference](./api.md)** - Public API surface
 - **[GitHub Repository](https://github.com/capiscio/capiscio-cli)** - Extend the validator
 
 !!! tip "Building an Agent?"
-    This document is for extending capiscio-cli. If you're building an A2A agent, see [CapiscIO Python SDK](/capiscio-python-sdk/) for runtime protection.
+    This document is for extending capiscio-cli. If you're building an A2A agent, see [CapiscIO Python SDK](../../capiscio-python-sdk/index.md) for runtime protection.
 
 ## Maintenance & Evolution
 

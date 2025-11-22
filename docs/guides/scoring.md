@@ -348,7 +348,7 @@ The CLI outputs rating labels based on score ranges:
 
     Complete command-line reference and options.
 
-    [:octicons-arrow-right-24: CLI Docs](./api-reference.md)
+    [:octicons-arrow-right-24: CLI Docs](../reference/api.md)
 
 -   **⚡ Quick Start**
 
@@ -356,7 +356,7 @@ The CLI outputs rating labels based on score ranges:
 
     Get started with CapiscIO CLI in 5 minutes.
 
-    [:octicons-arrow-right-24: Quick Start](./index.md)
+    [:octicons-arrow-right-24: Quick Start](../getting-started/installation.md)
 
 </div>
 

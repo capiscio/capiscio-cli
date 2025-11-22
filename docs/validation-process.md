@@ -340,10 +340,10 @@ Version: 0.3.0 (Strictness: progressive)
 - **[Scoring System](scoring-system.md)** - Understand how validation results translate to scores
 - **[API Reference](api-reference.md)** - Use validation programmatically
 - **[Architecture](architecture.md)** - Internal validator implementation details
-- **[A2A Security](../../a2a-security/)** - Runtime protection for production agents
+- **[Python SDK](/capiscio-python-sdk/)** - Runtime protection for production agents
 
 !!! tip "Production Deployment"
-    capiscio-cli validates agent cards during development and CI/CD. For runtime protection, use [CapiscIO A2A Security middleware](../../a2a-security/).
+    capiscio-cli validates agent cards during development and CI/CD. For runtime protection, use [CapiscIO Python SDK](/capiscio-python-sdk/).
 
 ## Contributing to Validation
 
@@ -351,6 +351,6 @@ See the [GitHub repository](https://github.com/capiscio/capiscio-cli) for inform
 
 ## Related Documentation
 
-- [CLI Usage Guide](README.md)
+- [CLI Usage Guide](index.md)
 - [API Reference](./api-reference.md)
 - [A2A Protocol Specification](https://github.com/a2aproject/A2A){:target="_blank"}
