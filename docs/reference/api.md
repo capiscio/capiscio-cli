@@ -464,6 +464,6 @@ results.filter(r => !r.success).forEach(result => {
 
 ## See Also
 
-- [Validation Process Documentation](./validation-process.md)
-- [CLI Usage Guide](README.md)
-- [GitHub Repository](https://github.com/capiscio/capiscio-cli)
+- **[Validation Process](../../concepts/validation.md)** - Detailed validation logic
+- **[Scoring System](../../concepts/scoring.md)** - How scores are calculated
+- **[Architecture](./architecture.md)** - Internal implementation details
