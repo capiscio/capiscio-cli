@@ -1,151 +1,172 @@
 ---
-title: API Reference - CapiscIO CLI Documentation
-description: Programmatic API documentation for CapiscIO CLI including A2AValidator class, validation methods, and TypeScript interfaces.
-keywords: CapiscIO CLI API, A2AValidator, validation methods, TypeScript, programmatic usage, npm package
+title: TypeScript API Reference
+description: Programmatic API documentation for the capiscio npm package. A2AValidator class and TypeScript types.
 ---
 
-# API Reference
+# TypeScript API Reference
 
-> Programmatic usage documentation for CapiscIO CLI
+The `capiscio` package exports a pure TypeScript validation engine for programmatic use.
 
-This document provides comprehensive API documentation for using CapiscIO CLI programmatically.
+!!! info "When to Use"
+    Use the TypeScript API when you need:
+    
+    - Runtime validation in Node.js applications
+    - Custom error handling and result processing
+    - Integration with Express, Fastify, or other frameworks
+    - Batch validation workflows
+    
+    For command-line usage, see the [CLI Reference](./cli.md).
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Core Classes](#core-classes)
-- [Types & Interfaces](#types-interfaces)
-- [Validation Options](#validation-options)
-- [Error Handling](#error-handling)
-- [Examples](#examples)
+---
 
 ## Installation
 
 ```bash
-npm install capiscio-cli
+npm install capiscio
 ```
 
-## Core Classes
+---
 
-### A2AValidator
-
-The main validation class for A2A agent cards.
+## Quick Start
 
 ```typescript
-import { A2AValidator } from 'capiscio-cli';
+import { A2AValidator } from 'capiscio';
 
 const validator = new A2AValidator();
+
+// Validate a local file
+const result = await validator.validate('./agent-card.json');
+
+// Validate a URL
+const remoteResult = await validator.validate('https://agent.example.com');
+
+// Check results
+if (result.success) {
+  console.log(`Score: ${result.score}/100`);
+} else {
+  result.errors.forEach(err => console.error(err.message));
+}
 ```
 
-#### Constructor
+---
+
+## A2AValidator
+
+The main validation class.
+
+### Constructor
 
 ```typescript
 constructor(httpClient?: HttpClient)
 ```
 
-**Parameters:**
-- `httpClient` (optional): Custom HTTP client implementation
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `httpClient` | `HttpClient` | Optional custom HTTP client for network requests |
 
-#### Methods
+### Methods
 
-##### `validate(input, options?): Promise<ValidationResult>`
+#### validate()
 
-Main validation method that supports both files and URLs.
+Main validation method supporting files and URLs.
 
 ```typescript
-const result = await validator.validate('./agent.json', {
+async validate(
+  input: AgentCard | string, 
+  options?: ValidationOptions
+): Promise<ValidationResult>
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `input` | `AgentCard \| string` | Agent card object, file path, or URL |
+| `options` | `ValidationOptions` | Validation configuration |
+
+**Example:**
+
+```typescript
+const result = await validator.validate('./agent-card.json', {
   strictness: 'progressive',
-  timeout: 10000
+  timeout: 10000,
+  skipSignatureVerification: false
 });
 ```
 
-**Parameters:**
-- `input`: `AgentCard | string` - Agent card object or URL/file path
-- `options`: `ValidationOptions` - Validation configuration
-
-**Returns:** `Promise<ValidationResult>`
-
-##### `validateProgressive(input, options?): Promise<ValidationResult>`
-
-Convenience method for progressive validation.
-
-```typescript
-const result = await validator.validateProgressive('./agent.json');
-```
-
-##### `validateStrict(input, options?): Promise<ValidationResult>`
+#### validateStrict()
 
 Convenience method for strict validation.
 
 ```typescript
-const result = await validator.validateStrict('./agent.json');
+async validateStrict(
+  input: AgentCard | string, 
+  options?: ValidationOptions
+): Promise<ValidationResult>
 ```
 
-##### `validateConservative(input, options?): Promise<ValidationResult>`
-
-Convenience method for conservative validation.
+**Example:**
 
 ```typescript
-const result = await validator.validateConservative('./agent.json');
+const result = await validator.validateStrict('./agent-card.json');
+// Equivalent to: validator.validate(input, { strictness: 'strict' })
 ```
 
-##### `validateSchemaOnly(card, options?): Promise<ValidationResult>`
+#### validateProgressive()
 
-Schema-only validation (no network calls).
+Convenience method for progressive validation (default mode).
 
 ```typescript
-const result = await validator.validateSchemaOnly(agentCardObject);
+async validateProgressive(
+  input: AgentCard | string, 
+  options?: ValidationOptions
+): Promise<ValidationResult>
 ```
 
-### FetchHttpClient
+#### validateConservative()
 
-Default HTTP client implementation using native fetch API.
+Convenience method for conservative validation (minimal requirements).
 
 ```typescript
-import { FetchHttpClient } from 'capiscio-cli';
-
-const httpClient = new FetchHttpClient();
-const validator = new A2AValidator(httpClient);
+async validateConservative(
+  input: AgentCard | string, 
+  options?: ValidationOptions
+): Promise<ValidationResult>
 ```
 
-#### Methods
+#### validateSchemaOnly()
 
-##### `get(url, options?): Promise<HttpResponse>`
-
-Performs HTTP GET request.
+Schema validation without network requests.
 
 ```typescript
-const response = await httpClient.get('https://example.com/agent.json', {
-  timeout: 5000,
-  headers: { 'Authorization': 'Bearer token' }
-});
+async validateSchemaOnly(
+  card: AgentCard, 
+  options?: ValidationOptions
+): Promise<ValidationResult>
 ```
 
-## Types & Interfaces
-
-### AgentCard
+**Example:**
 
 ```typescript
-interface AgentCard {
-  protocolVersion: string;
-  name: string;
-  description: string;
-  url: string;
-  preferredTransport: TransportProtocol;
-  additionalInterfaces?: AgentInterface[];
-  provider: AgentProvider;
-  iconUrl?: string;
-  version: string;
-  documentationUrl?: string;
-  capabilities?: AgentCapabilities;
-  securitySchemes?: Record<string, SecurityScheme>;
-  security?: Array<Record<string, string[]>>;
-  defaultInputModes?: string[];
-  defaultOutputModes?: string[];
-  skills?: AgentSkill[];
-  supportsAuthenticatedExtendedCard?: boolean;
-  signatures?: AgentCardSignature[];
-  extensions?: AgentExtension[];
+import { readFileSync } from 'fs';
+
+const cardJson = JSON.parse(readFileSync('./agent-card.json', 'utf8'));
+const result = await validator.validateSchemaOnly(cardJson);
+```
+
+---
+
+## Types
+
+### ValidationOptions
+
+```typescript
+interface ValidationOptions {
+  strictness?: 'strict' | 'progressive' | 'conservative';
+  timeout?: number;                    // HTTP timeout in ms (default: 10000)
+  skipDynamic?: boolean;               // Skip network requests
+  skipSignatureVerification?: boolean; // Skip JWS verification
+  verbose?: boolean;                   // Enable detailed logging
+  registryReady?: boolean;             // Check registry readiness
+  showVersionCompat?: boolean;         // Include version analysis
 }
 ```
 
@@ -153,54 +174,26 @@ interface AgentCard {
 
 ```typescript
 interface ValidationResult {
-  success: boolean;
-  score: number;
-  errors: ValidationError[];
+  success: boolean;           // Overall pass/fail
+  score: number;              // 0-100 score
+  errors: ValidationError[];  // Blocking issues
   warnings: ValidationWarning[];
   suggestions: ValidationSuggestion[];
   validations: ValidationCheck[];
-  versionInfo?: VersionInfo;
+  versionInfo?: VersionValidationInfo;
+  scoringResult?: ScoringResult;
 }
-```
-
-### ValidationOptions
-
-```typescript
-interface ValidationOptions {
-  transport?: TransportProtocol | 'all';
-  strictness?: ValidationStrictness;
-  a2aVersion?: string;
-  timeout?: number;
-  compliance?: boolean;
-  registryReady?: boolean;
-  testMessage?: string;
-  skipDynamic?: boolean;
-  suggestions?: boolean;
-  showVersionCompat?: boolean;
-}
-```
-
-### ValidationStrictness
-
-```typescript
-type ValidationStrictness = 'strict' | 'progressive' | 'conservative';
-```
-
-### TransportProtocol
-
-```typescript
-type TransportProtocol = 'JSONRPC' | 'GRPC' | 'HTTP+JSON';
 ```
 
 ### ValidationError
 
 ```typescript
 interface ValidationError {
-  code: string;
-  message: string;
-  field?: string;
+  code: string;        // e.g., 'SCHEMA_VALIDATION_ERROR'
+  message: string;     // Human-readable description
+  field?: string;      // JSON path (e.g., 'skills.0.id')
   severity: 'error';
-  fixable?: boolean;
+  fixable?: boolean;   // Can be auto-fixed
 }
 ```
 
@@ -216,32 +209,67 @@ interface ValidationWarning {
 }
 ```
 
-### ValidationSuggestion
-
-```typescript
-interface ValidationSuggestion {
-  id: string;
-  message: string;
-  severity: 'info';
-  impact?: string;
-  fixable?: boolean;
-}
-```
-
 ### ValidationCheck
 
 ```typescript
 interface ValidationCheck {
-  id: string;
-  name: string;
+  id: string;                              // e.g., 'schema_validation'
+  name: string;                            // e.g., 'Schema Validation'
   status: 'passed' | 'failed' | 'skipped';
   message: string;
-  duration?: number;
+  duration?: number;                       // ms
   details?: string;
 }
 ```
 
-### HttpClient Interface
+### AgentCard
+
+Full A2A v0.3.0 agent card type:
+
+```typescript
+interface AgentCard {
+  // Required fields
+  protocolVersion: string;
+  name: string;
+  description: string;
+  url: string;
+  version: string;
+  capabilities: AgentCapabilities;
+  defaultInputModes: string[];
+  defaultOutputModes: string[];
+  skills: AgentSkill[];
+  
+  // Optional fields
+  preferredTransport?: 'JSONRPC' | 'GRPC' | 'HTTP+JSON';
+  additionalInterfaces?: AgentInterface[];
+  provider?: AgentProvider;
+  iconUrl?: string;
+  documentationUrl?: string;
+  securitySchemes?: Record<string, SecurityScheme>;
+  security?: Array<Record<string, string[]>>;
+  supportsAuthenticatedExtendedCard?: boolean;
+  signatures?: AgentCardSignature[];
+  extensions?: AgentExtension[];
+}
+```
+
+### AgentSkill
+
+```typescript
+interface AgentSkill {
+  id: string;           // Required, unique
+  name: string;         // Required, max 200 chars
+  description: string;  // Required, max 2000 chars
+  tags: string[];       // Required, at least one
+  examples?: string[];
+  inputModes?: string[];
+  outputModes?: string[];
+}
+```
+
+### HttpClient
+
+Interface for custom HTTP clients:
 
 ```typescript
 interface HttpClient {
@@ -261,209 +289,123 @@ interface HttpResponse {
 }
 ```
 
-## Validation Options
-
-### Strictness Levels
-
-| Level | Description | Use Case |
-|-------|-------------|----------|
-| `strict` | Full compliance, zero tolerance | Production deployment |
-| `progressive` | Balanced validation with warnings | Development, CI/CD |
-| `conservative` | Minimal requirements only | Early development |
-
-### Common Options
-
-```typescript
-const options: ValidationOptions = {
-  strictness: 'progressive',    // Validation level
-  timeout: 10000,              // HTTP timeout in ms
-  skipDynamic: false,          // Skip network calls
-  registryReady: false,        // Registry deployment checks
-  showVersionCompat: true      // Detailed version analysis
-};
-```
-
-## Error Handling
-
-### Error Types
-
-```typescript
-// Validation errors
-if (!result.success) {
-  result.errors.forEach(error => {
-    console.error(`${error.code}: ${error.message}`);
-    if (error.field) {
-      console.error(`Field: ${error.field}`);
-    }
-  });
-}
-
-// HTTP errors
-try {
-  const result = await validator.validate('https://invalid-url.com');
-} catch (error) {
-  if (error instanceof HttpError) {
-    console.error(`HTTP ${error.status}: ${error.message}`);
-  }
-}
-```
-
-### Error Codes
-
-- `SCHEMA_VALIDATION_ERROR`: Schema validation failed
-- `VERSION_MISMATCH_ERROR`: Version compatibility issues
-- `VALIDATION_FAILED`: General validation failure
-- `ENDPOINT_UNREACHABLE`: Network connectivity issues
-- `NOT_FOUND`: Agent card not found
-- `TIMEOUT`: Request timeout
+---
 
 ## Examples
 
-### Basic Validation
+### Express Middleware
 
 ```typescript
-import { A2AValidator } from 'capiscio-cli';
+import express from 'express';
+import { A2AValidator } from 'capiscio';
 
+const app = express();
 const validator = new A2AValidator();
 
-// Validate local file
-const result = await validator.validate('./agent.json');
-console.log(`Validation ${result.success ? 'passed' : 'failed'}`);
-console.log(`Score: ${result.score}/100`);
-
-// Validate URL
-const urlResult = await validator.validate('https://api.example.com');
-if (!urlResult.success) {
-  urlResult.errors.forEach(error => {
-    console.error(`Error: ${error.message}`);
+app.post('/validate', express.json(), async (req, res) => {
+  const result = await validator.validate(req.body);
+  
+  res.json({
+    valid: result.success,
+    score: result.score,
+    errors: result.errors,
+    warnings: result.warnings
   });
-}
-```
-
-### Strict Validation for Production
-
-```typescript
-const validator = new A2AValidator();
-
-const result = await validator.validateStrict('./agent.json', {
-  registryReady: true,
-  timeout: 15000
 });
-
-if (result.success) {
-  console.log('✅ Agent ready for production deployment!');
-} else {
-  console.log('❌ Agent failed production validation:');
-  result.errors.forEach(error => {
-    console.log(`  • ${error.message}`);
-  });
-  process.exit(1);
-}
-```
-
-### Schema-Only Validation
-
-```typescript
-const validator = new A2AValidator();
-const agentCard = JSON.parse(fs.readFileSync('./agent.json', 'utf8'));
-
-const result = await validator.validateSchemaOnly(agentCard);
-
-if (result.success) {
-  console.log('Schema validation passed');
-} else {
-  console.log('Schema issues found:');
-  result.errors.forEach(error => {
-    console.log(`  ${error.field}: ${error.message}`);
-  });
-}
-```
-
-### Custom HTTP Client
-
-```typescript
-class CustomHttpClient implements HttpClient {
-  async get(url: string, options?: RequestOptions): Promise<HttpResponse> {
-    // Custom implementation with authentication, retries, etc.
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': 'Bearer ' + process.env.API_TOKEN,
-        ...options?.headers
-      }
-    });
-    
-    return {
-      status: response.status,
-      data: await response.json(),
-      headers: Object.fromEntries(response.headers.entries())
-    };
-  }
-}
-
-const validator = new A2AValidator(new CustomHttpClient());
-const result = await validator.validate('https://protected-api.example.com');
-```
-
-### CI/CD Integration
-
-```typescript
-// ci-validation.js
-import { A2AValidator } from 'capiscio-cli';
-
-const validator = new A2AValidator();
-
-const result = await validator.validate('./dist/agent.json', {
-  strictness: 'progressive',
-  skipDynamic: true  // No network calls in CI
-});
-
-// Output for CI systems
-console.log(JSON.stringify({
-  success: result.success,
-  score: result.score,
-  errors: result.errors.length,
-  warnings: result.warnings.length
-}, null, 2));
-
-process.exit(result.success ? 0 : 1);
 ```
 
 ### Batch Validation
 
 ```typescript
-import { A2AValidator } from 'capiscio-cli';
+import { A2AValidator } from 'capiscio';
 import { glob } from 'glob';
 
 const validator = new A2AValidator();
-const agentFiles = await glob('./agents/**/*.json');
+const files = await glob('./agents/**/*.json');
 
 const results = await Promise.all(
-  agentFiles.map(async (file) => {
-    const result = await validator.validate(file);
-    return {
-      file,
-      success: result.success,
-      score: result.score,
-      errors: result.errors.length
-    };
-  })
+  files.map(async (file) => ({
+    file,
+    result: await validator.validate(file)
+  }))
 );
 
-// Report summary
-const passed = results.filter(r => r.success).length;
-const total = results.length;
-console.log(`Validation Summary: ${passed}/${total} agents passed`);
+// Summary
+const passed = results.filter(r => r.result.success).length;
+console.log(`${passed}/${results.length} agents passed validation`);
 
-// Report failures
-results.filter(r => !r.success).forEach(result => {
-  console.log(`❌ ${result.file}: ${result.errors} errors`);
-});
+// Failed agents
+results
+  .filter(r => !r.result.success)
+  .forEach(r => {
+    console.log(`❌ ${r.file}:`);
+    r.result.errors.forEach(e => console.log(`   ${e.message}`));
+  });
+```
+
+### Custom HTTP Client
+
+```typescript
+import { A2AValidator, HttpClient, HttpResponse } from 'capiscio';
+
+class AuthenticatedClient implements HttpClient {
+  constructor(private token: string) {}
+  
+  async get(url: string, options?: RequestOptions): Promise<HttpResponse> {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${this.token}`,
+        ...options?.headers
+      },
+      signal: options?.signal
+    });
+    
+    return {
+      status: response.status,
+      data: await response.json(),
+      headers: Object.fromEntries(response.headers)
+    };
+  }
+}
+
+const validator = new A2AValidator(
+  new AuthenticatedClient(process.env.API_TOKEN!)
+);
+```
+
+### Error Code Reference
+
+| Code | Description |
+|------|-------------|
+| `SCHEMA_VALIDATION_ERROR` | Required field missing or invalid type |
+| `VERSION_MISMATCH_ERROR` | Protocol version incompatibility |
+| `SIGNATURE_VERIFICATION_FAILED` | JWS signature invalid |
+| `PRIMARY_ENDPOINT_UNREACHABLE` | Main URL not responding |
+| `TRANSPORT_URL_CONFLICT` | Conflicting transport declarations |
+| `JSONRPC_ENDPOINT_ERROR` | JSON-RPC protocol test failed |
+
+---
+
+## Exports
+
+The package exports these items:
+
+```typescript
+// Classes
+export { A2AValidator } from './validator/a2a-validator';
+export { FetchHttpClient } from './validator/http-client';
+export { ValidateCommand } from './commands/validate';
+export { ConsoleOutput } from './output/console';
+export { JsonOutput } from './output/json';
+
+// Types
+export * from './types';
 ```
 
 ---
 
 ## See Also
 
-- **[Validation Process](../../concepts/validation.md)** - Detailed validation logic
-- **[Scoring System](../../concepts/scoring.md)** - How scores are calculated
-- **[Architecture](./architecture.md)** - Internal implementation details
+- [CLI Reference](./cli.md) - Command-line usage
+- [Scoring System](./scoring.md) - Understanding validation scores
+- [Programmatic Usage](./programmatic-usage.md) - Integration patterns

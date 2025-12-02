@@ -90,5 +90,4 @@ nav:
       - Programmatic Usage: guides/programmatic-usage.md
       - Scoring: guides/scoring.md
   - Reference:
-      - API Reference: reference/api.md
-      - Architecture: reference/architecture.md
+      - CLI Reference: reference/cli.md
