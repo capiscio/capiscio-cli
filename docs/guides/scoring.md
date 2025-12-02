@@ -1,17 +1,14 @@
 # Using Scoring in the CLI
 
-> **Learn how to use the three-dimensional scoring system with CapiscIO CLI** - For the full scoring system reference, see the [**Unified Scoring Guide**](https://docs.capisc.io/guides/scoring-system/)
+> **Learn how to use the three-dimensional scoring system with CapiscIO CLI**
 
 ## Quick Overview
 
 CapiscIO CLI uses a three-dimensional scoring system to evaluate agent cards:
 
-- **📄 Compliance (0-100)** - Protocol adherence and format validation
-- **🔐 Trust (0-100)** - Security practices and cryptographic verification  
-- **🚀 Availability (0-100)** - Operational readiness *(optional with `--test-live`)*
-
-!!! tip "Complete Scoring Details"
-    This page focuses on **CLI usage**. For the complete scoring system explanation, breakdowns, and calculations, see the [**Unified Scoring Guide**](https://docs.capisc.io/guides/scoring-system/).
+- **📄 Compliance (0-100)** - Protocol adherence and format validation (`complianceScore`)
+- **🔐 Trust (0-100)** - Security practices and cryptographic verification (`trustScore`)
+- **🚀 Availability (0-100)** - Operational readiness *(only with `--test-live`)*
 
 ---
 
@@ -19,81 +16,93 @@ CapiscIO CLI uses a three-dimensional scoring system to evaluate agent cards:
 
 ### Viewing Scores
 
-Add the `--detailed-scores` flag to any validation command:
+Scores are included in `--json` output:
 
 ```bash
-# Show detailed scoring breakdown
-capiscio validate agent-card.json --detailed-scores
+# Validate and get JSON output with scores
+capiscio validate agent-card.json --json
 
-# Combine with live testing for availability scores
-capiscio validate https://agent.example.com --detailed-scores --test-live
-
-# JSON output with full scoring details
-capiscio validate agent-card.json --detailed-scores --json
+# Add live endpoint testing for availability scores
+capiscio validate https://agent.example.com --json --test-live
 ```
 
-### Example Output
+### Example Text Output
 
 ```
-📊 SCORING BREAKDOWN:
+✅ A2A AGENT VALIDATION PASSED
+Score: 100/100
+Version: 0.3.0
+Perfect! Your agent passes all validations
+```
 
-  ✓ Spec Compliance: 100/100 Perfect
-    └─ Core Fields:       60/60
-    └─ Skills Quality:    20/20
-    └─ Format:            15/15
-    └─ Data Quality:      5/5
+### Example Output with Warnings
 
-  ✓ Trust: 24/100 Moderately Trusted
-    ⚠️  Confidence: 0.6x (Raw: 40)
-    └─ Signatures:        0/40
-    └─ Provider:          20/25
-    └─ Security:          15/20
-    └─ Documentation:     5/15
+```
+✅ A2A AGENT VALIDATION PASSED
+Score: 85/100
+Version: 0.3.0
+Agent passed with warnings
 
-  ⏭️  Availability: Not Tested
-    └─ Schema-only validation (use --test-live to test availability)
-
-💡 RECOMMENDATION:
-  ✅ Fully A2A v0.3.0 compliant
-  ⚠️ No cryptographic signatures - consider adding JWS signatures to improve trust
-  ⚠️ Not yet production ready - improve: trust
+ERRORS FOUND:
+⚠️ [MISSING_DOCS] warning: No documentation URL provided
+⚠️ [UNSIGNED] warning: Agent card is not cryptographically signed
 ```
 
 ---
 
 ## JSON Output Format
 
-When using `--json` with `--detailed-scores`, the output includes full scoring details:
+When using `--json`, the output includes the full scoring result:
 
 ```json
 {
-  "valid": true,
+  "success": true,
+  "score": 100,
   "version": "0.3.0",
-  "scores": {
-    "compliance": {
-      "total": 100,
-      "rating": "PERFECT",
-      "breakdown": {
-        "coreFields": {"score": 60, "maxScore": 60, "issues": []},
-        "skillsQuality": {"score": 20, "maxScore": 20, "issues": []},
-        "formatCompliance": {"score": 15, "maxScore": 15, "issues": []},
-        "dataQuality": {"score": 5, "maxScore": 5, "issues": []}
-      }
+  "errors": [],
+  "warnings": [],
+  "scoringResult": {
+    "success": true,
+    "complianceScore": 100,
+    "trustScore": 85,
+    "availability": {
+      "score": 0,
+      "tested": false
     },
-    "trust": {
-      "total": 24,
-      "rating": "MODERATELY_TRUSTED",
-      "confidenceMultiplier": 0.6,
-      "breakdown": {
-        "signatures": {"score": 0, "maxScore": 40, "issues": ["No signatures present"]},
-        "provider": {"score": 20, "maxScore": 25, "issues": []},
-        "security": {"score": 15, "maxScore": 20, "issues": []},
-        "documentation": {"score": 5, "maxScore": 15, "issues": ["Missing docs URL"]}
-      }
-    },
-    "availability": null
+    "issues": [],
+    "signatures": null
   },
-  "recommendation": "Improve trust score by adding cryptographic signatures"
+  "liveTest": null
+}
+```
+
+### With Live Testing (`--test-live`)
+
+```json
+{
+  "success": true,
+  "score": 100,
+  "version": "0.3.0",
+  "errors": [],
+  "warnings": [],
+  "scoringResult": {
+    "success": true,
+    "complianceScore": 100,
+    "trustScore": 85,
+    "availability": {
+      "score": 95,
+      "tested": true,
+      "endpointUrl": "https://agent.example.com/.well-known/agent.json",
+      "latencyMs": 142
+    },
+    "issues": []
+  },
+  "liveTest": {
+    "success": true,
+    "endpoint": "https://agent.example.com/.well-known/agent.json",
+    "responseTime": 142,
+    "errors": []
+  }
 }
 ```
 
@@ -101,21 +110,24 @@ When using `--json` with `--detailed-scores`, the output includes full scoring d
 
 ```bash
 # Extract compliance score
-capiscio validate agent.json --detailed-scores --json | jq '.scores.compliance.total'
+capiscio validate agent.json --json | jq '.scoringResult.complianceScore'
+
+# Extract trust score
+capiscio validate agent.json --json | jq '.scoringResult.trustScore'
 
 # Check if production-ready (compliance >= 95, trust >= 60)
-COMPLIANCE=$(capiscio validate agent.json --detailed-scores --json | jq '.scores.compliance.total')
-TRUST=$(capiscio validate agent.json --detailed-scores --json | jq '.scores.trust.total')
+RESULT=$(capiscio validate agent.json --json)
+COMPLIANCE=$(echo "$RESULT" | jq '.scoringResult.complianceScore')
+TRUST=$(echo "$RESULT" | jq '.scoringResult.trustScore')
 
-if [ "$COMPLIANCE" -ge 95 ] && [ "$TRUST" -ge 60 ]; then
+if (( $(echo "$COMPLIANCE >= 95" | bc -l) )) && (( $(echo "$TRUST >= 60" | bc -l) )); then
   echo "✅ Production ready"
 else
   echo "⚠️  Not production ready"
 fi
 
-# Get all issues from trust breakdown
-capiscio validate agent.json --detailed-scores --json | \
-  jq '.scores.trust.breakdown | to_entries | .[] | select(.value.issues | length > 0) | {category: .key, issues: .value.issues}'
+# Get all validation issues
+capiscio validate agent.json --json | jq '.scoringResult.issues[]'
 ```
 
 ---
@@ -133,30 +145,30 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       
       - name: Install CapiscIO CLI
-        run: npm install -g capiscio-cli
+        run: npm install -g capiscio
       
       - name: Validate with scoring
         run: |
-          capiscio validate agent-card.json --detailed-scores --json > results.json
+          capiscio validate agent-card.json --json > results.json
           
           # Extract scores
-          COMPLIANCE=$(jq '.scores.compliance.total' results.json)
-          TRUST=$(jq '.scores.trust.total' results.json)
+          COMPLIANCE=$(jq '.scoringResult.complianceScore' results.json)
+          TRUST=$(jq '.scoringResult.trustScore' results.json)
           
           echo "📊 Compliance: $COMPLIANCE/100"
           echo "🔐 Trust: $TRUST/100"
           
           # Fail if below thresholds
-          if [ "$COMPLIANCE" -lt 95 ] || [ "$TRUST" -lt 60 ]; then
-            echo "❌ Failed: Scores below production thresholds (Compliance >= 95, Trust >= 60)"
+          if (( $(echo "$COMPLIANCE < 95" | bc -l) )) || (( $(echo "$TRUST < 60" | bc -l) )); then
+            echo "❌ Failed: Scores below production thresholds"
             exit 1
           fi
           
@@ -168,20 +180,17 @@ jobs:
 ```yaml
 validate-agent:
   stage: test
-  image: node:18
+  image: node:20
   script:
-    - npm install -g capiscio-cli
-    - capiscio validate agent-card.json --detailed-scores --json > results.json
-    - COMPLIANCE=$(jq '.scores.compliance.total' results.json)
-    - TRUST=$(jq '.scores.trust.total' results.json)
+    - npm install -g capiscio
+    - capiscio validate agent-card.json --json > results.json
+    - COMPLIANCE=$(jq '.scoringResult.complianceScore' results.json)
+    - TRUST=$(jq '.scoringResult.trustScore' results.json)
     - |
-      if [ "$COMPLIANCE" -lt 95 ] || [ "$TRUST" -lt 60 ]; then
+      if (( $(echo "$COMPLIANCE < 95" | bc -l) )) || (( $(echo "$TRUST < 60" | bc -l) )); then
         echo "❌ Scores below thresholds"
         exit 1
       fi
-  artifacts:
-    reports:
-      junit: results.json
 ```
 
 ---
@@ -191,79 +200,57 @@ validate-agent:
 ### Validate Multiple Files
 
 ```bash
-# Validate all agent cards with scoring
+# Validate all agent cards
 for file in agents/*.json; do
   echo "Validating $file..."
-  capiscio validate "$file" --detailed-scores
+  capiscio validate "$file"
 done
 
 # Or use find
-find agents/ -name "*.json" -exec capiscio validate {} --detailed-scores \;
+find agents/ -name "*.json" -exec capiscio validate {} \;
 ```
 
-### Live Testing with Scoring
+### Live Testing for Availability
 
 ```bash
 # Full validation with live endpoint testing
-capiscio validate https://agent.example.com --detailed-scores --test-live
+capiscio validate https://agent.example.com --test-live --json
 
-# Output shows all three dimensions:
-# - Compliance: Protocol adherence
-# - Trust: Security and signatures
-# - Availability: Endpoint health (from live test)
+# Schema-only validation (no live test even if URL)
+capiscio validate https://agent.example.com --schema-only
 ```
 
 ### Compare Agents
 
 ```bash
 # Compare two agents side-by-side
-capiscio validate agent-a.json --detailed-scores --json > a.json
-capiscio validate agent-b.json --detailed-scores --json > b.json
+capiscio validate agent-a.json --json > a.json
+capiscio validate agent-b.json --json > b.json
 
 # Extract key metrics
-echo "Agent A - Compliance: $(jq '.scores.compliance.total' a.json), Trust: $(jq '.scores.trust.total' a.json)"
-echo "Agent B - Compliance: $(jq '.scores.compliance.total' b.json), Trust: $(jq '.scores.trust.total' b.json)"
+echo "Agent A - Compliance: $(jq '.scoringResult.complianceScore' a.json), Trust: $(jq '.scoringResult.trustScore' a.json)"
+echo "Agent B - Compliance: $(jq '.scoringResult.complianceScore' b.json), Trust: $(jq '.scoringResult.trustScore' b.json)"
 ```
 
 ---
 
-## Filtering by Score Thresholds
-
-### Only Show Low Scores
-
-```bash
-#!/bin/bash
-# validate-and-filter.sh - Only show agents below thresholds
-
-for file in agents/*.json; do
-  RESULT=$(capiscio validate "$file" --detailed-scores --json)
-  COMPLIANCE=$(echo "$RESULT" | jq '.scores.compliance.total')
-  TRUST=$(echo "$RESULT" | jq '.scores.trust.total')
-  
-  if [ "$COMPLIANCE" -lt 90 ] || [ "$TRUST" -lt 70 ]; then
-    echo "⚠️  $file - Compliance: $COMPLIANCE, Trust: $TRUST"
-    echo "$RESULT" | jq '.scores.compliance.breakdown, .scores.trust.breakdown'
-  fi
-done
-```
-
-### Batch Validation Report
+## Batch Validation Report
 
 ```bash
 #!/bin/bash
 # generate-report.sh - Create CSV report of all agent scores
 
-echo "File,Compliance,Trust,ComplianceRating,TrustRating" > report.csv
+echo "File,Success,Compliance,Trust,Issues" > report.csv
 
 for file in agents/*.json; do
-  RESULT=$(capiscio validate "$file" --detailed-scores --json 2>/dev/null)
-  if [ $? -eq 0 ]; then
-    COMPLIANCE=$(echo "$RESULT" | jq -r '.scores.compliance.total')
-    TRUST=$(echo "$RESULT" | jq -r '.scores.trust.total')
-    COMP_RATING=$(echo "$RESULT" | jq -r '.scores.compliance.rating')
-    TRUST_RATING=$(echo "$RESULT" | jq -r '.scores.trust.rating')
+  RESULT=$(capiscio validate "$file" --json 2>/dev/null)
+  if [ $? -eq 0 ] || [ $? -eq 1 ]; then
+    SUCCESS=$(echo "$RESULT" | jq -r '.success')
+    COMPLIANCE=$(echo "$RESULT" | jq -r '.scoringResult.complianceScore')
+    TRUST=$(echo "$RESULT" | jq -r '.scoringResult.trustScore')
+    ISSUES=$(echo "$RESULT" | jq -r '.scoringResult.issues | length')
     
-    echo "$file,$COMPLIANCE,$TRUST,$COMP_RATING,$TRUST_RATING" >> report.csv
+    echo "$file,$SUCCESS,$COMPLIANCE,$TRUST,$ISSUES" >> report.csv
   fi
 done
 
@@ -272,94 +259,46 @@ echo "📊 Report generated: report.csv"
 
 ---
 
-## Exit Codes and Scoring
+## Exit Codes
 
 The CLI uses exit codes to indicate validation results:
 
-- **Exit 0**: Validation passed (agent is valid)
-- **Exit 1**: Validation failed (agent has errors)
+| Exit Code | Meaning |
+|-----------|---------|
+| **0** | Validation passed (agent is valid) |
+| **1** | Validation failed (agent has errors) |
 
-**Important:** The CLI exits with 0 even if scores are low, as long as the agent card is structurally valid. If you need to enforce score thresholds, use the JSON output and check scores in your script (see examples above).
+**Important:** The CLI exits with 0 even if scores are low, as long as the agent card is structurally valid. To enforce score thresholds, parse the JSON output:
 
 ```bash
-# This will exit 0 even if trust is low
-capiscio validate agent.json --detailed-scores
+# Enforce minimum trust score
+RESULT=$(capiscio validate agent.json --json)
+TRUST=$(echo "$RESULT" | jq '.scoringResult.trustScore')
 
-# To enforce thresholds, check JSON output
-TRUST=$(capiscio validate agent.json --detailed-scores --json | jq '.scores.trust.total')
-if [ "$TRUST" -lt 60 ]; then
-  echo "❌ Trust score too low"
+if (( $(echo "$TRUST < 60" | bc -l) )); then
+  echo "❌ Trust score too low: $TRUST"
   exit 1
 fi
 ```
 
 ---
 
-## Rating Enums
+## CLI Flags Reference
 
-The CLI outputs rating labels based on score ranges:
-
-### Compliance Ratings
-- `PERFECT` (100)
-- `EXCELLENT` (95-99)
-- `GOOD` (85-94)
-- `FAIR` (70-84)
-- `POOR` (0-69)
-
-### Trust Ratings
-- `HIGHLY_TRUSTED` (90-100)
-- `TRUSTED` (70-89)
-- `MODERATELY_TRUSTED` (50-69)
-- `UNTRUSTED` (30-49)
-- `HIGHLY_UNTRUSTED` (0-29)
-
-### Availability Ratings (with `--test-live`)
-- `HIGHLY_AVAILABLE` (90-100)
-- `AVAILABLE` (70-89)
-- `PARTIALLY_AVAILABLE` (50-69)
-- `DEGRADED` (30-49)
-- `UNAVAILABLE` (0-29)
+| Flag | Description |
+|------|-------------|
+| `--json` | Output results as JSON (includes all scores) |
+| `--test-live` | Test live agent endpoint for availability score |
+| `--strict` | Enable strict validation mode |
+| `--schema-only` | Validate schema only, skip endpoint testing |
+| `--skip-signature` | Skip JWS signature verification |
+| `--registry-ready` | Check registry deployment readiness |
+| `--timeout` | Request timeout (default: 10s) |
+| `--errors-only` | Show only errors and warnings |
 
 ---
 
 ## See Also
 
-<div class="grid cards" markdown>
-
--   **📚 Unified Scoring Guide**
-
-    ---
-
-    Complete scoring system reference with all breakdowns, calculations, and rating thresholds.
-
-    [:octicons-arrow-right-24: View Complete Guide](https://docs.capisc.io/guides/scoring-system/)
-
--   **🐍 A2A Security Scoring**
-
-    ---
-
-    Python usage with ValidationResult API and decision patterns.
-
-    [:octicons-arrow-right-24: Python Usage](https://docs.capisc.io/capiscio-python-sdk/guides/scoring/)
-
--   **📖 CLI Reference**
-
-    ---
-
-    Complete command-line reference and options.
-
-    [:octicons-arrow-right-24: CLI Docs](../reference/api.md)
-
--   **⚡ Quick Start**
-
-    ---
-
-    Get started with CapiscIO CLI in 5 minutes.
-
-    [:octicons-arrow-right-24: Quick Start](../getting-started/installation.md)
-
-</div>
-
----
-
-**For complete scoring details**, see the [**Unified Scoring Guide**](https://docs.capisc.io/guides/scoring-system/).
+- [CLI Reference](../reference/cli.md) - Complete command-line reference and options
+- [Programmatic Usage](./programmatic-usage.md) - Use the CLI from Node.js applications
