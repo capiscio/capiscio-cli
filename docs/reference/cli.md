@@ -134,5 +134,6 @@ When using `--json`, output follows this structure:
 
 ## See Also
 
-- [capiscio-core CLI](../../reference/cli/index.md) - Full CLI documentation
-- [validate-a2a](https://github.com/capiscio/validate-a2a) - GitHub Action
+- [Scoring Guide](../guides/scoring.md) - Understanding validation scores
+- [Programmatic Usage](../guides/programmatic-usage.md) - Use the CLI from Node.js
+- [validate-a2a](https://github.com/capiscio/validate-a2a) - GitHub Action for CI/CD

@@ -407,5 +407,5 @@ export * from './types';
 ## See Also
 
 - [CLI Reference](./cli.md) - Command-line usage
-- [Scoring System](./scoring.md) - Understanding validation scores
-- [Programmatic Usage](./programmatic-usage.md) - Integration patterns
+- [Scoring System](../guides/scoring.md) - Understanding validation scores
+- [Programmatic Usage](../guides/programmatic-usage.md) - Integration patterns

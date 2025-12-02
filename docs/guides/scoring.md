@@ -7,7 +7,7 @@
 CapiscIO CLI uses a three-dimensional scoring system to evaluate agent cards:
 
 - **📄 Compliance (0-100)** - Protocol adherence and format validation (`complianceScore`)
-- **�� Trust (0-100)** - Security practices and cryptographic verification (`trustScore`)
+- **🔐 Trust (0-100)** - Security practices and cryptographic verification (`trustScore`)
 - **🚀 Availability (0-100)** - Operational readiness *(only with `--test-live`)*
 
 ---
@@ -300,22 +300,5 @@ fi
 
 ## See Also
 
-<div class="grid cards" markdown>
-
--   **📖 CLI Reference**
-
-    ---
-
-    Complete command-line reference and options.
-
-    [:octicons-arrow-right-24: CLI Docs](../reference/cli.md)
-
--   **⚡ Quick Start**
-
-    ---
-
-    Get started with CapiscIO CLI in 5 minutes.
-
-    [:octicons-arrow-right-24: Quick Start](../getting-started/installation.md)
-
-</div>
+- [CLI Reference](../reference/cli.md) - Complete command-line reference and options
+- [Programmatic Usage](./programmatic-usage.md) - Use the CLI from Node.js applications

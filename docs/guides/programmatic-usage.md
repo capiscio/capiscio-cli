@@ -12,7 +12,7 @@ For Node.js applications that need validation results, spawn the CLI with `--jso
 ## Basic Example
 
 ```typescript
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 
 interface ValidationResult {
   success: boolean;
@@ -22,19 +22,17 @@ interface ValidationResult {
 }
 
 function validate(path: string): ValidationResult {
-  try {
-    const output = execSync(`npx capiscio validate "${path}" --json`, {
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
-    return JSON.parse(output);
-  } catch (error: any) {
-    // CLI exits with code 1 on validation failure, but still outputs JSON
-    if (error.stdout) {
-      return JSON.parse(error.stdout);
-    }
-    throw error;
+  const result = spawnSync('npx', ['capiscio', 'validate', path, '--json'], {
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+  
+  // CLI may exit with code 1 on validation failure but still outputs valid JSON
+  const output = result.stdout || '';
+  if (!output) {
+    throw new Error(`Validation failed: ${result.stderr}`);
   }
+  return JSON.parse(output);
 }
 
 // Usage
@@ -47,21 +45,26 @@ console.log(`Valid: ${result.success}, Score: ${result.score}`);
 ## Async Version
 
 ```typescript
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 
-const execAsync = promisify(exec);
-
-async function validateAsync(path: string): Promise<ValidationResult> {
-  try {
-    const { stdout } = await execAsync(`npx capiscio validate "${path}" --json`);
-    return JSON.parse(stdout);
-  } catch (error: any) {
-    if (error.stdout) {
-      return JSON.parse(error.stdout);
-    }
-    throw error;
-  }
+function validateAsync(path: string): Promise<ValidationResult> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('npx', ['capiscio', 'validate', path, '--json']);
+    let stdout = '';
+    let stderr = '';
+    
+    child.stdout.on('data', (data) => { stdout += data; });
+    child.stderr.on('data', (data) => { stderr += data; });
+    
+    child.on('close', (code) => {
+      // CLI may exit with code 1 on validation failure but still outputs valid JSON
+      if (stdout) {
+        resolve(JSON.parse(stdout));
+      } else {
+        reject(new Error(stderr || 'Validation failed'));
+      }
+    });
+  });
 }
 ```
 
@@ -101,7 +104,7 @@ await validateAll('./agents/**/*.json');
 
 ```typescript
 import express from 'express';
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { randomUUID } from 'crypto';
 
@@ -114,15 +117,15 @@ app.post('/api/validate', (req, res) => {
   writeFileSync(tempFile, JSON.stringify(req.body));
   
   try {
-    const output = execSync(`npx capiscio validate "${tempFile}" --json`, {
+    const result = spawnSync('npx', ['capiscio', 'validate', tempFile, '--json'], {
       encoding: 'utf8'
     });
-    res.json(JSON.parse(output));
-  } catch (error: any) {
-    if (error.stdout) {
-      res.json(JSON.parse(error.stdout));
+    
+    const output = result.stdout || '';
+    if (output) {
+      res.json(JSON.parse(output));
     } else {
-      res.status(500).json({ error: 'Validation failed' });
+      res.status(500).json({ error: result.stderr || 'Validation failed' });
     }
   } finally {
     unlinkSync(tempFile);
@@ -141,4 +144,4 @@ The `capiscio` npm package is a **distribution wrapper** for the Go-based valida
 - ✅ Keeps the npm package lightweight
 - ✅ Single source of truth for validation logic
 
-For deep TypeScript integration, consider using the [capiscio-sdk-python](../../reference/sdk-python/index.md) pattern with your own HTTP middleware.
+For native TypeScript integration, the spawning patterns shown above provide full access to all CLI features with proper error handling.

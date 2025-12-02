@@ -134,18 +134,16 @@ validate:
 For Node.js applications that need validation results programmatically, spawn the CLI with JSON output:
 
 ```typescript
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 
 function validateAgentCard(path: string) {
-  try {
-    const output = execSync(`npx capiscio validate ${path} --json`, {
-      encoding: 'utf8'
-    });
-    return JSON.parse(output);
-  } catch (error: any) {
-    // CLI returns non-zero exit code on validation failure
-    return JSON.parse(error.stdout);
-  }
+  const result = spawnSync('npx', ['capiscio', 'validate', path, '--json'], {
+    encoding: 'utf8'
+  });
+  
+  // CLI may exit with code 1 on validation failure but still outputs valid JSON
+  const output = result.stdout || result.stderr;
+  return JSON.parse(output);
 }
 
 const result = validateAgentCard('./agent-card.json');
